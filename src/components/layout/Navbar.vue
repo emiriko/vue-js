@@ -34,6 +34,11 @@ export default defineComponent({
         ] as Menu[]
     };
   },
+  methods: {
+    handleClick() {
+        console.log(this.$route)
+    }
+  }
 });
 
 </script>
@@ -43,7 +48,7 @@ export default defineComponent({
         <router-link to = "/" class = "font-bold text-white text-2xl m-0"> Tracko </router-link> 
         <ul class = "flex items-center gap-x-10">
             <li v-for="({name, url}, key) in menus" :key="key" class = "m-0 p-0">
-                <router-link :to = "url" class = "font-bold text-sm m-0">
+                <router-link :to = "url" class = "font-bold text-sm m-0 hover:text-light-white duration-300" :class="$route.name === name.toLowerCase() ? 'text-light-white' : 'text-light-grey' ">
                     {{name}}
                 </router-link>
             </li>

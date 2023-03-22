@@ -9,6 +9,21 @@ const router = createRouter({
       name: 'home',
       component: HomeViewVue
     },
+    {
+      path: "/catalog",
+      name: "catalog",
+      component: HomeViewVue,
+    },
+    {
+      path: "/progress",
+      name: "my progress",
+      component: HomeViewVue,
+    },
+    {
+      path: "/profile",
+      name: "profile",
+      component: HomeViewVue,
+    },
   ]
 })
 
