@@ -1,18 +1,62 @@
 <script lang="ts"> 
 import { defineComponent } from 'vue';
 import { RouterLink } from 'vue-router';
+import GitlabIcon from '../icons/GitlabIcon.vue';
+
+interface Menu {
+  name: string;
+  url: string
+}
 
 export default defineComponent({
-  name: 'Navbar',
+  name: 'Footer',
   components: {
     RouterLink,
+    GitlabIcon
+  },
+  data() {
+    return {
+        menus: [
+            {
+                name: "Home",
+                url: "/"
+            },
+            {
+                name: "Catalog",
+                url: "/catalog"
+            },
+            {
+                name: "My Progress",
+                url: "/progress"
+            },
+            {
+                name: "Profile",
+                url: "/profile"
+            },
+        ] as Menu[]
+    };
   },
 });
 
 </script>
 
 <template>
-    <footer class = "absolute bottom-0 h-40 bg-red-500">
-
+    <footer class = "flex items-center absolute bottom-0 min-h-[120px] w-full border-t border-t-[#4D4D4D] py-20 font-bold gap-x-24">
+        <div class = "flex flex-col text-center gap-y-8">
+          <router-link to = "/" class = "font-bold text-white text-4xl m-0"> Tracko </router-link> 
+          <p>
+            <p class = "text-[#F4F4F4] text-sm"> Adpro B11 - 2023 </p>
+            <a href = "https://gitlab.cs.ui.ac.id/AdvProg/reguler-2023/mahasiswa/kelas-b/2106752180-Alvaro-Austin-/b11">
+              <GitlabIcon class = "w-fit h-fit " />
+            </a>
+          </p>
+        </div>
+        <ul class = "flex flex-col justify-evenly gap-y-8">
+            <li v-for="({name, url}, key) in menus" :key="key" class = "m-0 p-0">
+                <router-link :to = "url" class = "font-bold text-sm m-0 hover:text-light-white duration-300" :class="$route.name === name.toLowerCase() ? 'text-light-white' : 'text-light-grey' ">
+                    {{name}}
+                </router-link>
+            </li>
+        </ul> 
     </footer>
 </template>
