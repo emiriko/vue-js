@@ -3,7 +3,7 @@ import { defineComponent } from 'vue';
 import Auth from '@/components/layout/Auth.vue';
 
 export default defineComponent({
-  name: 'Login',
+  name: 'Register',
   components: {
     Auth,
   },

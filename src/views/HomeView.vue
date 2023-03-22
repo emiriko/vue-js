@@ -1,8 +1,8 @@
 <script setup lang="ts">
+
 </script>
 
 <template>
-  <main>
-    
-  </main>
+  <div>
+  </div>
 </template>

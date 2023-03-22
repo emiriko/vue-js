@@ -18,7 +18,7 @@ export default defineComponent({
 <template>
   <main class = "relative min-h-screen">
     <Navbar />
-    <div class = "relative py-16">
+    <div class = "relative py-16 w-full">
       <RouterView />
     </div>
     <Footer />

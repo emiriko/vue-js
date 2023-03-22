@@ -1,4 +1,7 @@
 import HomeViewVue from '@/views/HomeView.vue'
+import LoginViewVue from '@/views/LoginView.vue'
+import RegisterViewVue from '@/views/RegisterView.vue'
+import NotFoundViewVue from '@/views/NotFoundView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -23,6 +26,29 @@ const router = createRouter({
       path: "/profile",
       name: "profile",
       component: HomeViewVue,
+    },
+    {
+      path: "/auth",
+      children: [
+        {
+          path: "sign-in",
+          name: "sign in",
+          component: LoginViewVue
+        },
+        {
+          path: "sign-up",
+          name: "sign up",
+          component: RegisterViewVue
+        },
+      ]
+    },
+    { 
+      path: '/404', 
+      component: NotFoundViewVue 
+    },
+    { 
+      path: "/:catchAll(.*)",
+      redirect: "/404" 
     },
   ]
 })

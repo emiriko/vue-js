@@ -2,3 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.line{display:block; width: 100%}
+.line h1{font-size:16px; border-bottom:1px solid #4D4D4D; position:relative; width: 100%;}
+.line h1 span { position: relative; top: 15px; width: 100%;}
