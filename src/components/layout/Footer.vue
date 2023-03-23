@@ -44,8 +44,8 @@ export default defineComponent({
           <router-link to = "/" class = "font-bold text-white text-4xl m-0"> Tracko </router-link> 
           <p>
             <p class = "text-[#F4F4F4] text-sm"> Adpro B11 - 2023 </p>
-            <a href = "https://gitlab.cs.ui.ac.id/AdvProg/reguler-2023/mahasiswa/kelas-b/2106752180-Alvaro-Austin-/b11">
-              <GitlabIcon class = "w-fit h-fit" />
+            <a href = "https://gitlab.cs.ui.ac.id/AdvProg/reguler-2023/mahasiswa/kelas-b/2106752180-Alvaro-Austin-/b11" class = "text-center flex justify-center">
+              <GitlabIcon class = "w-fit h-fit text-center flex justify-center" />
             </a>
           </p>
         </div>
