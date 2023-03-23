@@ -50,7 +50,12 @@ const router = createRouter({
       path: "/:catchAll(.*)",
       redirect: "/404" 
     },
-  ]
+  ],
+  scrollBehavior() {
+      return new Promise((resolve) => {
+        resolve({ top: 0, left: 0, behavior: 'smooth' })
+      })
+  },
 })
 
 export default router

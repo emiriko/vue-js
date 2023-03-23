@@ -10,7 +10,7 @@ export default defineComponent({
   components: {
     Navbar,
     RouterView, // register RouterView component
-    Footer
+    Footer,
   },
 });
 </script>
