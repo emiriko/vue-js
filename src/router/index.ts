@@ -3,6 +3,7 @@ import LoginViewVue from '@/views/LoginView.vue'
 import RegisterViewVue from '@/views/RegisterView.vue'
 import NotFoundViewVue from '@/views/NotFoundView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import ProfileViewVue from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,7 +26,7 @@ const router = createRouter({
     {
       path: "/profile",
       name: "profile",
-      component: HomeViewVue,
+      component: ProfileViewVue,
     },
     {
       path: "/auth",
