@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.0.16",
+    "axios": "^1.4.0",
     "pinia": "^2.0.32",
     "vue": "^3.2.47",
     "vue-meta": "^2.4.0",
