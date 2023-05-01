@@ -3,6 +3,24 @@ default:
   
 deploy_preview:
   stage: deploy
+  pages:
+    stage: deploy
+    cache:
+      key:
+        files:
+          - package-lock.json
+        prefix: npm
+      paths:
+        - node_modules/
+    script:
+      - npm install
+      - npm run build
+      - cp -a dist/. public/
+    artifacts:
+      paths:
+        - public
+    rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   except:
     - main
   script:
@@ -13,6 +31,24 @@ deploy_preview:
 
 deploy_production:
   stage: deploy
+  pages:
+    stage: deploy
+    cache:
+      key:
+        files:
+          - package-lock.json
+        prefix: npm
+      paths:
+        - node_modules/
+    script:
+      - npm install
+      - npm run build
+      - cp -a dist/. public/
+    artifacts:
+      paths:
+        - public
+    rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   only:
     - main
   script:
