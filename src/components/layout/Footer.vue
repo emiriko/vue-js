@@ -39,10 +39,10 @@ export default defineComponent({
 </script>
 
 <template>
-    <footer class = "flex lg:flex-row flex-col items-center relative bottom-0 min-h-[120px] w-full border-t border-t-[#4D4D4D] py-20 font-bold gap-x-24">
+    <footer class = "flex lg:flex-row flex-col items-center relative bottom-0 min-h-[120px] w-full border-t border-t-[#4D4D4D] py-20 font-bold gap-x-24 gap-y-8">
         <div class = "flex flex-col text-center gap-y-8">
           <router-link to = "/" class = "font-bold text-white text-4xl m-0"> Tracko </router-link> 
-          <p>
+          <p className = "flex flex-col gap-y-8">
             <p class = "text-[#F4F4F4] text-sm"> Adpro B11 - 2023 </p>
             <a href = "https://gitlab.cs.ui.ac.id/AdvProg/reguler-2023/mahasiswa/kelas-b/2106752180-Alvaro-Austin-/b11" class = "text-center flex justify-center">
               <GitlabIcon class = "w-fit h-fit text-center flex justify-center" />

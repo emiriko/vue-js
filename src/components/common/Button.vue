@@ -34,7 +34,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <button class = "px-8 py-2 text-center rounded-xl font-bold" :class="[type === 'white' ? '' : 'bg-indigo text-white', className]">
+  <button class = "px-8 py-2 text-center rounded-xl font-bold" :class="[type === 'white' ? '' : 'bg-indigo text-white', className]" type="submit">
     <slot> Button Here (type harus "white" atau "indigo") </slot>
   </button>
 </template>
