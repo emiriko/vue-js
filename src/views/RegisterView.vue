@@ -5,6 +5,8 @@ import Button from '@/components/common/Button.vue';
 import { EnvelopeIcon, IdentificationIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/solid';
 import InputField from '@/components/common/InputField.vue';
 import axios from 'axios';
+import {useToast} from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
 
 export default defineComponent({
   name: 'Register',
@@ -15,7 +17,7 @@ export default defineComponent({
     EnvelopeIcon,
     IdentificationIcon,
     "v-button": Button,
-    InputField
+    InputField,
   },
   methods: {
     register(e: Event) {
@@ -30,10 +32,11 @@ export default defineComponent({
 
       axios.post("http://localhost:8080/api/auth/sign-up", payload)
       .then((res) => {
-        console.log(res)
+        this.showSuccessToast(res.data.message)
       })
       .catch((error) => {
         console.log("error", error)
+        this.showErrorToast(error.message);
       })
     }
   },
@@ -42,12 +45,23 @@ export default defineComponent({
     const username = ref('');
     const email = ref('');
     const password = ref('');
+    const toast = useToast();
+    
+    const showSuccessToast = (message: string) => {
+      toast.success(message);
+    };
+
+    const showErrorToast = (message: string) => {
+      toast.error(message);
+    };
 
     return {
       name,
       username,
       email,
-      password    
+      password,
+      showSuccessToast,
+      showErrorToast
     };
   }
 })
