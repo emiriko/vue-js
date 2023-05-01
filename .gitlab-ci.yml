@@ -3,27 +3,12 @@ default:
   
 deploy_preview:
   stage: deploy
-  pages:
-    stage: deploy
-    cache:
-      key:
-        files:
-          - package-lock.json
-        prefix: npm
-      paths:
-        - node_modules/
-    script:
-      - npm install
-      - npm run build
-      - cp -a dist/. public/
-    artifacts:
-      paths:
-        - public
-    rules:
-      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   except:
     - main
   script:
+    - npm install
+    - npm run build
+    - cp -a dist/. public/
     - npm install --global vercel
     - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
     - vercel build --token=$VERCEL_TOKEN
@@ -31,27 +16,12 @@ deploy_preview:
 
 deploy_production:
   stage: deploy
-  pages:
-    stage: deploy
-    cache:
-      key:
-        files:
-          - package-lock.json
-        prefix: npm
-      paths:
-        - node_modules/
-    script:
-      - npm install
-      - npm run build
-      - cp -a dist/. public/
-    artifacts:
-      paths:
-        - public
-    rules:
-      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   only:
     - main
   script:
+    - npm install
+    - npm run build
+    - cp -a dist/. public/
     - npm install --global vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
     - vercel build --prod --token=$VERCEL_TOKEN
