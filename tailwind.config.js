@@ -13,11 +13,21 @@ module.exports = {
       },
       backgroundImage: {
         gradientIndigo: 'linear-gradient(134.01deg, #A43BF6 40.75%, #4CA9FF 90.52%)'
-      }
+      },
+      zIndex: {
+        '0': 0,
+        '10': 10,
+        '20': 20,
+        '30': 30,
+        '40': 40,
+        '50': 50,
+      },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require('tailwindcss-hyphens'),
+  ],
 }
