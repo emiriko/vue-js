@@ -31,7 +31,7 @@ export default defineComponent({
     <div class = "absolute z-0 inset-y-0 right-0 flex flex-col bg-grey
               h-[180px] w-11/12 lg:w-[593px] rounded-xl grid grid-cols-1 gap-2 content-center py-5 px-20 mx-0">
       <h1 class = "text-2xl font-bold text-white w-full text-justify"> {{ username }}</h1>
-      <p class="hyphens-manual">{{ limitText(review) }}</p>
+      <div class="whitespace-break-words">{{ limitText(review) }}</div>
     </div>
   </div>
 </template>

@@ -22,12 +22,15 @@ module.exports = {
         '40': 40,
         '50': 50,
       },
+      maxWidth: {
+        '640': '640px',
+      },
+      whitespace: {
+        'break-words': 'break-word',
+      },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [
-    require('tailwindcss-hyphens'),
-  ],
 }

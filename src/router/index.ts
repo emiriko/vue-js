@@ -4,6 +4,7 @@ import RegisterViewVue from '@/views/RegisterView.vue'
 import NotFoundViewVue from '@/views/NotFoundView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProfileViewVue from '@/views/ProfileView.vue'
+import DetailView from "@/views/DetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,11 @@ const router = createRouter({
       path: "/catalog",
       name: "catalog",
       component: HomeViewVue,
+    },
+    {
+      path: "/catalog/:id",
+      name: "detail page",
+      component: DetailView,
     },
     {
       path: "/progress",
