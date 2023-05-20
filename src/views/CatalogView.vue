@@ -30,14 +30,16 @@ export default defineComponent ({
 
 <template>
     <div>
-        <input type="text" v-model="searchText" class="px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full"/>
-        <button id="search-button" @click="searchSeries">Search</button>
-    </div>
-
-    <div>
-        <p>
-            {{ $data }}
-        </p>
+        <div>
+            <input type="text" v-model="searchText" class="px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full"/>
+            <button id="search-button" @click="searchSeries">Search</button>
+        </div>
+    
+        <div>
+            <p>
+                {{ $data }}
+            </p>
+        </div>
     </div>
 </template>
 
