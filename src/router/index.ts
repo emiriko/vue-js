@@ -6,6 +6,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ProfileViewVue from '@/views/ProfileView.vue'
 import TestView from '@/views/CatalogView.vue';
 import CatalogViewVue from '@/views/CatalogView.vue'
+import CreateSeriesViewVue from '@/views/CreateSeriesView.vue'
+import UpdateSeriesView from '@/views/UpdateSeriesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +28,16 @@ const router = createRouter({
           component: CatalogViewVue
         },
       ]
+    },
+    {
+      path: '/catalog/create',
+      name: 'create',
+      component: CreateSeriesViewVue
+    },
+    {
+      path: '/catalog/update/:type/:id',
+      name: 'update',
+      component: UpdateSeriesView
     },
     {
       path: "/progress",
