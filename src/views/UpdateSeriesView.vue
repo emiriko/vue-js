@@ -19,7 +19,7 @@ export default defineComponent({
   data() {
     return {
       component: "FilmForm",
-      method: "UPDATE",
+      method: "PUT",
       id: this.$route.params.id
     };
   },
@@ -27,9 +27,9 @@ export default defineComponent({
     const params = this.$route.params.type;
     // console.log(this.$route.params);
     // this.address = params.pop();
-    if (params === "film") {
+    if (params === "FILM") {
         this.component = "FilmForm"
-      } else if (params === "show") {
+      } else if (params === "SHOW") {
         this.component = "ShowForm"
       } else {
         this.component = "BookForm"

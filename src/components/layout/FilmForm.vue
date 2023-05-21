@@ -2,8 +2,7 @@
 
 <script lang="ts">
 
-import { defineComponent, ref } from 'vue';
-import Auth from '@/components/layout/Auth.vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import Button from '@/components/common/Button.vue';
 import { EnvelopeIcon, IdentificationIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/solid';
 import InputField from '@/components/common/InputField.vue';
@@ -15,7 +14,6 @@ import 'vue-toast-notification/dist/theme-bootstrap.css';
 export default defineComponent({
   name: 'Film Form',
   components: {
-    Auth,
     LockClosedIcon,
     UserIcon,
     EnvelopeIcon,
@@ -32,12 +30,23 @@ export default defineComponent({
        options: [
        "ACTION",
        "COMEDY",
-       "FANTASY"
+       "FANTASY",
+       "DOCUMENTARY",
+       "MYSTERY",
+       "SCIFI",
+       "ROMANCE",
+       "HORROR",
+       "THRILLER",
+       "DRAMA",
+       "HISTORICAL",
       ],
+      json : {
+
+      }
     };
   },
   props: {
-    type: {
+    method: {
       required: true,
       type: String,
     },
@@ -52,7 +61,7 @@ export default defineComponent({
       this.options.push(tag)
       this.value.push(tag)
     },
-    create(e: Event) {
+    async create(e: Event) {
       e.preventDefault()
       
       const payload = {
@@ -63,46 +72,69 @@ export default defineComponent({
         genres: this.value,
         year: this.year
       }
-      if (this.type === "CREATE") {
-        axios.post("http://localhost:8080/api/catalog/create_film", payload)
+      if (this.method === "POST") {
+        await axios.post("http://localhost:8080/api/catalog/create_film", payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
         .then((res) => {
             this.showSuccessToast("Succesfully added " +res.data.title)
+            this.$router.push('/catalog/');
         })
         .catch((error) => {
             console.log("error", error)
             this.showErrorToast(error.message);
         })
       } else {
-        axios.put("http://localhost:8080/api/catalog/update_film/"+this.id, payload)
+        await axios.put("http://localhost:8080/api/catalog/update_film/"+this.id, payload, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
         .then((res) => {
             this.showSuccessToast("Succesfully updated " +res.data.title)
+            this.$router.push('/catalog/'+res.data.id);
         })
         .catch((error) => {
             console.log("error", error)
             this.showErrorToast(error.message);
         })  
+
+        
       }
       
     }
   },
   setup(props) {
-    var title = ref('');
-    var description = ref('');
-    var imageUrl = ref('');
-    var director = ref('');
-    var genres:string[] = [];
-    var year = 1999;
-    if (props.type === "UPDATE") {
-        axios.get('http://localhost:8080/api/catalog/'+props.id).then(
-            response => {
-                title = response.data.title;
-                description = response.data.description;
-                imageUrl = response.data.imageUrl;
-                director = response.data.director;
-                genres = response.data.genres;
-                year = response.data.year;
-            }
-        )
+    const title = ref('');
+    const description = ref('');
+    const imageUrl = ref('');
+    const director = ref('');
+    const genres:string[] = [];
+    const year = ref(0);
+    if (props.method === "PUT") {
+      const fetchData = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/catalog/'+props.id);
+            // Assign the response data to the variables
+            title.value = response.data.title;
+            description.value = response.data.description;
+            imageUrl.value = response.data.imageUrl;
+            director.value = response.data.director;
+            genres.values = response.data.genres;
+            year.value = response.data.year;
+          } catch (error) {
+            console.error(error);
+          }
+        };
+
+        // Fetch data on component mount using onMounted()
+        onMounted(fetchData);
+
+      
          
     }
     
@@ -140,13 +172,12 @@ export default defineComponent({
 
 <template>
     <slot></slot>
-    
     <div class = "flex py-14 mx-0 justify-center">
         <form class = "flex flex-col max-w-5xl w-full mx-0 gap-y-8 items-center" action = "/" :onSubmit="create">
             <InputField type="text" placeholder="Title" v-on:update:inp="title = $event" v-bind:inp="title"> 
               <IdentificationIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
-            <div class="items-center gap-x-4 w-full mx-0 relative">
+            <div class="flex items-center gap-x-4 w-full mx-0 relative">
                 <label class="typo__label">Year</label>
                 <input type="number" placeholder="Year" v-model="year" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> 
             </div>

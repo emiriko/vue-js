@@ -2,8 +2,7 @@
 
 <script lang="ts">
 
-import { defineComponent, ref } from 'vue';
-import Auth from '@/components/layout/Auth.vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import Button from '@/components/common/Button.vue';
 import { EnvelopeIcon, IdentificationIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/solid';
 import InputField from '@/components/common/InputField.vue';
@@ -15,7 +14,6 @@ import 'vue-toast-notification/dist/theme-bootstrap.css';
 export default defineComponent({
   name: 'Film Form',
   components: {
-    Auth,
     LockClosedIcon,
     UserIcon,
     EnvelopeIcon,
@@ -32,12 +30,20 @@ export default defineComponent({
        options: [
        "ACTION",
        "COMEDY",
-       "FANTASY"
+       "FANTASY",
+       "DOCUMENTARY",
+       "MYSTERY",
+       "SCIFI",
+       "ROMANCE",
+       "HORROR",
+       "THRILLER",
+       "DRAMA",
+       "HISTORICAL",
       ],
     };
   },
   props: {
-    type: {
+    method: {
       required: true,
       type: String,
     },
@@ -52,7 +58,7 @@ export default defineComponent({
       this.options.push(tag)
       this.value.push(tag)
     },
-    create(e: Event) {
+    async create(e: Event) {
       e.preventDefault()
       
       const payload = {
@@ -66,19 +72,32 @@ export default defineComponent({
         year: this.year
       }
 
-      if (this.type === "CREATE") {
-        axios.post("http://localhost:8080/api/catalog/create_book", payload)
+      if (this.method === "POST") {
+        await axios.post("http://localhost:8080/api/catalog/create_book", payload, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
         .then((res) => {
             this.showSuccessToast("Succesfully added " +res.data.title)
+            this.$router.push('/catalog/');
+
         })
         .catch((error) => {
             console.log("error", error)
             this.showErrorToast(error.message);
         })
       } else {
-        axios.put("http://localhost:8080/api/catalog/update_book/"+this.id, payload)
+        await axios.put("http://localhost:8080/api/catalog/update_book/"+this.id, payload, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
         .then((res) => {
             this.showSuccessToast("Succesfully updated " +res.data.title)
+            this.$router.push('/catalog/'+res.data.id);
         })
         .catch((error) => {
             console.log("error", error)
@@ -93,22 +112,29 @@ export default defineComponent({
     var imageUrl = ref('');
     var producer = ref('');
     var genres:string[] = [];
-    var year = 1999;
-    var volumes = 0;
-    var chapters = 0;
-    if (props.type === "UPDATE") {
-        axios.get('http://localhost:8080/api/catalog/'+props.id).then(
-            response => {
-                title = response.data.title;
-                description = response.data.description;
-                imageUrl = response.data.imageUrl;
-                producer = response.data.producer;
-                genres = response.data.genres;
-                year = response.data.year;
-                volumes = response.data.volumes;
-                chapters = response.data.chapters
-            }
-        )
+    var year = ref(0);
+    var volumes = ref(0);
+    var chapters = ref(0);
+    if (props.method === "PUT") {
+        const fetchData = async () => {
+          try {
+            const response = await axios.get('http://localhost:8080/api/catalog/'+props.id);
+            // Assign the response data to the variables
+            title.value = response.data.title;
+            description.value = response.data.description;
+            imageUrl.value = response.data.imageUrl;
+            producer.value = response.data.producer;
+            genres.values = response.data.genres;
+            year.value = response.data.year;
+            volumes.value = response.data.volumes;
+            chapters.value = response.data.chapters
+          } catch (error) {
+            console.error(error);
+          }
+        };
+
+        // Fetch data on component mount using onMounted()
+        onMounted(fetchData);
          
     }
 

@@ -4,10 +4,10 @@ import RegisterViewVue from '@/views/RegisterView.vue'
 import NotFoundViewVue from '@/views/NotFoundView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProfileViewVue from '@/views/ProfileView.vue'
-import TestView from '@/views/CatalogView.vue';
 import CatalogViewVue from '@/views/CatalogView.vue'
 import CreateSeriesViewVue from '@/views/CreateSeriesView.vue'
 import UpdateSeriesView from '@/views/UpdateSeriesView.vue'
+import DetailView from "@/views/DetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +38,11 @@ const router = createRouter({
       path: '/catalog/update/:type/:id',
       name: 'update',
       component: UpdateSeriesView
+    },
+    {
+      path: "/catalog/:id",
+      name: "detail",
+      component: DetailView,
     },
     {
       path: "/progress",

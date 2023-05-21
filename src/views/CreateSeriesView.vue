@@ -32,9 +32,9 @@ export default defineComponent({
 
 
 <template>
-    <button @click="component ='FilmForm'">Film</button>
-    <button @click="component ='ShowForm'">Show</button>
-    <button @click="component ='BookForm'">Book</button>
+    <button class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700" @click="component ='FilmForm'">Film</button>
+    <button class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700" @click="component ='ShowForm'">Show</button>
+    <button class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700" @click="component ='BookForm'">Book</button>
     <component :is="component" :method="method">
         <h1 class = "capitalize text-5xl font-bold text-white w-full"> Create Series </h1>
 
