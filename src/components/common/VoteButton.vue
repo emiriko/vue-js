@@ -1,6 +1,5 @@
 <script lang="ts">
 import {defineComponent} from "vue";
-import {integer} from "vue-types";
 
 export default defineComponent({
   name: 'VoteButton',
@@ -15,7 +14,7 @@ export default defineComponent({
     },
     count: {
       required: true,
-      type: integer
+      type: Number
     }
   },
   methods: {

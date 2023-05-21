@@ -1,6 +1,18 @@
 <script lang="ts">
 import { defineComponent} from 'vue';
+import Button from '@/components/common/Button.vue';
+import { RouterLink } from 'vue-router';
 import axios from 'axios';
+
+interface Series {
+  title: string;
+  id: number;
+  description: string;
+  year: number;
+  genres: string[];
+  imageUrl: string;
+  type: string;
+}
 
 export default defineComponent ({
     name: "Catalog",
@@ -9,7 +21,7 @@ export default defineComponent ({
     data() {
         return {
             searchText: "",
-            data: []
+            data: [] as Series[]
         };
     },
 
@@ -36,10 +48,14 @@ export default defineComponent ({
 
 
 <template>
-    
+    <div class="text-right"></div>
+
     <div>
         <input type="text" placeholder="Search by Genres, Title, Creator, and id" v-model="searchText" class="px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full"/>
+        <button id="search-button" @click="()=>$router.push('/catalog/create/')" class="px-8 py-2 text-center rounded-xl font-bold">Create</button>
+        
         <button id="search-button" @click="searchSeries" class="px-8 py-2 text-center rounded-xl font-bold">Search</button>
+
     </div>
 
     <div class="series-list">
@@ -47,7 +63,7 @@ export default defineComponent ({
             <router-link :to="{name: 'detail', params: {id: series.id}}" class="series-link">
                 <div class="series-image">
                     <img v-bind:src="series.imageUrl" alt="Series Image" class="image"/>
-                    <div class="title">{{ series.title }}</div>
+                    <div class="title">{{ series.title }} ({{ series.year }})</div>
                 </div>
             </router-link>
         </div>
