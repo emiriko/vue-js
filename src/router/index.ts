@@ -4,6 +4,8 @@ import RegisterViewVue from '@/views/RegisterView.vue'
 import NotFoundViewVue from '@/views/NotFoundView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProfileViewVue from '@/views/ProfileView.vue'
+import CatalogViewVue from '@/views/CatalogView.vue'
+import DetailView from "@/views/DetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,7 +18,19 @@ const router = createRouter({
     {
       path: "/catalog",
       name: "catalog",
-      component: HomeViewVue,
+      component: CatalogViewVue,
+      children: [
+        {
+          path: '/catalog/search',
+          name: 'search',
+          component: CatalogViewVue
+        },
+      ]
+    },
+    {
+      path: "/catalog/:id",
+      name: "detail",
+      component: DetailView,
     },
     {
       path: "/progress",
