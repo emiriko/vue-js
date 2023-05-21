@@ -29,7 +29,7 @@ const router = createRouter({
     },
     {
       path: "/catalog/:id",
-      name: "detail page",
+      name: "detail",
       component: DetailView,
     },
     {
