@@ -7,6 +7,23 @@ import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
+interface Series {
+  title: string;
+  id: number;
+  description: string;
+  year: number;
+  genres: string[];
+  imageUrl: string;
+  type: string;
+  author: string;
+  producer: string;
+  director: string;
+  volumes: number;
+  chapters: number;
+  seasons: number;
+  episodes: number;
+}
+
 export default defineComponent({
   name: "DetailView",
   components: {
@@ -73,7 +90,7 @@ export default defineComponent({
 
   data() {
     return {
-      data: [],
+      data: {} as Series,
       isOpen: false,
     }
   },
