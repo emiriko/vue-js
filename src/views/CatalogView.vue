@@ -59,11 +59,11 @@ export default defineComponent ({
     </div>
 
     <div class="series-list">
-        <div class="series" v-for="series in data" :key="series.id">
-            <router-link :to="{name: 'detail', params: {id: series.id}}" class="series-link">
+        <div class="series" v-for="series in data" :key="series['id']">
+            <router-link :to="{name: 'detail', params: {id: series['id']}}" class="series-link">
                 <div class="series-image">
-                    <img v-bind:src="series.imageUrl" alt="Series Image" class="image"/>
-                    <div class="title">{{ series.title }} ({{ series.year }})</div>
+                    <img v-bind:src="series['imageUrl']" alt="Series Image" class="image"/>
+                    <div class="title">{{ series['title'] }}</div>
                 </div>
             </router-link>
         </div>

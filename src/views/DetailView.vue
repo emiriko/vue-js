@@ -7,24 +7,6 @@ import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
-
-interface Series {
-  title: string;
-  id: number;
-  description: string;
-  year: number;
-  genres: string[];
-  imageUrl: string;
-  type: string;
-  author: string;
-  producer: string;
-  director: string;
-  volumes: number;
-  chapters: number;
-  seasons: number;
-  episodes: number;
-}
-
 export default defineComponent({
   name: "DetailView",
   components: {
@@ -50,6 +32,7 @@ export default defineComponent({
 
       return capitalizedFirst+rest;
     },
+    
     openDialog() {
         this.isOpen = true;
       },
@@ -90,7 +73,7 @@ export default defineComponent({
 
   data() {
     return {
-      data: {} as Series,
+      data: [],
       isOpen: false,
     }
   },
@@ -162,38 +145,38 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
   <div>
     <div class="container">
       <div class="poster">
-        <img v-bind:src="data.imageUrl" alt="image"/>
+        <img v-bind:src="data['imageUrl']" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title">{{ data.title }} ({{ data.year }})</div>
+        <div class="series-title">{{ data['title'] }}</div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
-            <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
+            <span v-for="genre in data['genres']">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
             <label>Creator</label>
-            <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
+            <span>{{ data['author'] }} {{ data['producer'] }} {{ data['director'] }}</span>
           </div>
           <div class="set">
             <label>Series ID: </label>
-            <span>{{ data.id }}</span>
+            <span>{{ data['id'] }}</span>
           </div>
           <div class="set">
             <label>Type: </label>
-            <span>{{ data.type }}</span>
+            <span>{{ data['type'] }}</span>
           </div>
           <div class="set">
-            <label v-if="data.type === `SHOW`">Season(s): {{ data.seasons }}</label>
-            <label v-if="data.type === `BOOK`">Volume(s): {{ data.volumes }}</label>
+            <label v-if="data['type'] === `SHOW`">Season(s): {{ data['seasons'] }}</label>
+            <label v-if="data['type'] === `BOOK`">Volume(s): {{ data['volumes'] }}</label>
           </div>
           <div class="set">
-            <label v-if="data.type === `SHOW`">Episode(s): {{ data.episodes }}</label>
-            <label v-if="data.type === `BOOK`">Chapter(s): {{ data.chapters }}</label>
+            <label v-if="data['type'] === `SHOW`">Episode(s): {{ data['episodes'] }}</label>
+            <label v-if="data['type'] === `BOOK`">Chapter(s): {{ data['chapters'] }}</label>
           </div>
         </div>
         <div class="series-description">Description:</div>
-        <div class="series-description-text">{{ data.description }} iiais bdabsdibasdabsdi baisbdass bdiabsdbasd nasi ndasndiasnd asidbaisbdisaa </div>
+        <div class="series-description-text">{{ data['description'] }} </div>
       </div>
     </div>
 
@@ -210,7 +193,7 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
       <div class="flex flex-col gap-10">
         <div class="flex flex-row justify-between">
           <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Your Review</div>
-          <router-link :to="'/catalog/update/'+ data.type +'/' + data.id">
+          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
             <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
           </router-link>
           <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
