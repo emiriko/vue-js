@@ -6,7 +6,6 @@ import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
-<<<<<<< HEAD
 
 interface Series {
   title: string;
@@ -38,8 +37,6 @@ interface Vote {
   seriesId: number;
 }
 
-=======
->>>>>>> a9d96b7f9188e38bcc60f0bd0dcdb9f340077bb6
 export default defineComponent({
   name: "DetailView",
   components: {
@@ -70,7 +67,6 @@ export default defineComponent({
 
       return capitalizedFirst+rest;
     },
-    
     openDialog() {
         this.isOpen = true;
       },
@@ -153,7 +149,7 @@ export default defineComponent({
     const downvoteCount  = ref(0);
     const toast = useToast();
     const myUsername = "naila";
-    
+
     const showSuccessToast = (message: string) => {
       toast.success(message);
     };
@@ -183,7 +179,7 @@ export default defineComponent({
 
   data() {
     return {
-      data: [],
+      data: {} as Series,
       isOpen: false,
       reviews: [] as Review[],
       myReview: {} as Review,
@@ -264,14 +260,13 @@ export default defineComponent({
 </script>
 
 <template>
-   
+
   <div>
     <div class="container mb-5">
       <div class="poster">
-        <img v-bind:src="data['imageUrl']" alt="image"/>
+        <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
-<<<<<<< HEAD
         <div class="flex justify-end gap-4">
           <router-link :to="'/catalog/update/'+ data.type +'/' + data.id">
             <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
@@ -281,37 +276,34 @@ export default defineComponent({
           </button>
         </div>
         <div class="series-title">{{ data.title }} ({{ data.year }})</div>
-=======
-        <div class="series-title">{{ data['title'] }}</div>
->>>>>>> a9d96b7f9188e38bcc60f0bd0dcdb9f340077bb6
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
-            <span v-for="genre in data['genres']">{{ capitalized(genre)+ " " }} </span>
+            <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
             <label>Creator</label>
-            <span>{{ data['author'] }} {{ data['producer'] }} {{ data['director'] }}</span>
+            <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
           </div>
           <div class="set">
             <label>Series ID: </label>
-            <span>{{ data['id'] }}</span>
+            <span>{{ data.id }}</span>
           </div>
           <div class="set">
             <label>Type: </label>
-            <span>{{ data['type'] }}</span>
+            <span>{{ data.type }}</span>
           </div>
           <div class="set">
-            <label v-if="data['type'] === `SHOW`">Season(s): {{ data['seasons'] }}</label>
-            <label v-if="data['type'] === `BOOK`">Volume(s): {{ data['volumes'] }}</label>
+            <label v-if="data.type === `SHOW`">Season(s): {{ data.seasons }}</label>
+            <label v-if="data.type === `BOOK`">Volume(s): {{ data.volumes }}</label>
           </div>
           <div class="set">
-            <label v-if="data['type'] === `SHOW`">Episode(s): {{ data['episodes'] }}</label>
-            <label v-if="data['type'] === `BOOK`">Chapter(s): {{ data['chapters'] }}</label>
+            <label v-if="data.type === `SHOW`">Episode(s): {{ data.episodes }}</label>
+            <label v-if="data.type === `BOOK`">Chapter(s): {{ data.chapters }}</label>
           </div>
         </div>
         <div class="series-description">Description:</div>
-        <div class="series-description-text">{{ data['description'] }} </div>
+        <div class="series-description-text">{{ data.description }} iiais bdabsdibasdabsdi baisbdass bdiabsdbasd nasi ndasndiasnd asidbaisbdisaa </div>
       </div>
     </div>
 
@@ -328,7 +320,6 @@ export default defineComponent({
       <div class="flex flex-col gap-10">
         <div class="flex flex-row justify-between">
           <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Your Review</div>
-<<<<<<< HEAD
           <div v-if="Object.keys(myReview).length !== 0" class="flex gap-4">
             <button @click="openDialogEditReview" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
               Edit
@@ -337,14 +328,6 @@ export default defineComponent({
               Delete
             </button>
           </div>
-=======
-          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
-            <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
-          </router-link>
-          <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
-            Delete
-          </button>
->>>>>>> a9d96b7f9188e38bcc60f0bd0dcdb9f340077bb6
           
             <!-- Dialog  -->
             <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpen">
