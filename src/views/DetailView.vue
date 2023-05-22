@@ -4,9 +4,8 @@ import {defineComponent, ref} from "vue";
 import ReviewCard from "@/components/common/ReviewCard.vue";
 import VoteButton from "@/components/common/VoteButton.vue";
 import axios from "axios";
-
-var isUpvote: Ref<boolean> = ref<boolean>(false);
-var isVoted: Ref<boolean> = ref<boolean>(false);
+import {useToast} from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
 
 export default defineComponent({
   name: "DetailView",
@@ -17,14 +16,14 @@ export default defineComponent({
   }, methods: {
     voteClick(type: String) {
       if (type === "upvote") {
-        isUpvote=ref<boolean>(true);
-        isVoted=ref<boolean>(true);
+        this.isUpvote=true;
+        this.isVoted=true;
       } else {
-        isUpvote=ref<boolean>(false);
-        isVoted=ref<boolean>(true);
+        this.isUpvote=false;
+        this.isVoted=true;
       }
-      console.log("isUpvote: " + isUpvote.value);
-      console.log("isVoted: " + isVoted.value);
+      console.log("isUpvote: " + this.isUpvote.valueOf);
+      console.log("isVoted: " + this.isVoted.valueOf);
     },
     capitalized(str: String) {
       const allLowerCase = str.toLowerCase();
@@ -33,11 +32,49 @@ export default defineComponent({
 
       return capitalizedFirst+rest;
     },
+    
+    openDialog() {
+        this.isOpen = true;
+      },
+      closeDialog(userChoice: Boolean) {
+        this.isOpen = false;
+        if (userChoice) {
+          axios.delete("http://localhost:8080/api/catalog/delete_series/"+this.data.id)
+        .then((res) => {
+            this.showSuccessToast(res.data)
+            this.$router.push('/catalog/');
+        })
+        .catch((error) => {
+            console.log("error", error)
+            this.showErrorToast(error.message);
+        })
+        }
+      }
+  },
+  setup() {
+    const isUpvote = ref(false);
+    const isVoted  = ref(false);
+    const toast = useToast();
+    
+    const showSuccessToast = (message: string) => {
+      toast.success(message);
+    };
+
+    const showErrorToast = (message: string) => {
+      toast.error(message);
+    };
+      return {
+      isUpvote,
+      isVoted,
+      showSuccessToast,
+      showErrorToast
+    };
   },
 
   data() {
     return {
-      data: []
+      data: [],
+      isOpen: false,
     }
   },
 
@@ -104,10 +141,11 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
 </script>
 
 <template>
+   
   <div>
     <div class="container">
       <div class="poster">
-        <img v-bind:src="data.imageUrl" alt="image"/>
+        <img v-bind:src="data['imageUrl']" alt="image"/>
       </div>
       <div class="info">
         <div class="series-title">{{ data['title'] }}</div>
@@ -126,7 +164,7 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
           </div>
           <div class="set">
             <label>Type: </label>
-            <span>{{ data[type] }}</span>
+            <span>{{ data['type'] }}</span>
           </div>
           <div class="set">
             <label v-if="data['type'] === `SHOW`">Season(s): {{ data['seasons'] }}</label>
@@ -155,7 +193,25 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
       <div class="flex flex-col gap-10">
         <div class="flex flex-row justify-between">
           <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Your Review</div>
-          <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
+          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
+            <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
+          </router-link>
+          <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
+            Delete
+          </button>
+          
+            <!-- Dialog  -->
+            <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpen">
+              <div class="bg-grey rounded-lg p-4">
+                <!-- Dialog content goes here -->
+                <h2>Are you sure you want to delete this series from the database?</h2>
+                <div class="flex justify-end mt-4">
+                  <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="closeDialog(false)">No</button>
+                  <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="closeDialog(true)">Yes</button>
+                </div>
+              </div>
+            </div>
+
         </div>
         <ReviewCard review="my review" username="my-username"></ReviewCard>
       </div>
@@ -167,6 +223,7 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
       <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
     </div>
   </div>
+
 </template>
 
 <style>

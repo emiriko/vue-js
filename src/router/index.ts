@@ -5,6 +5,8 @@ import NotFoundViewVue from '@/views/NotFoundView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ProfileViewVue from '@/views/ProfileView.vue'
 import CatalogViewVue from '@/views/CatalogView.vue'
+import CreateSeriesViewVue from '@/views/CreateSeriesView.vue'
+import UpdateSeriesView from '@/views/UpdateSeriesView.vue'
 import DetailView from "@/views/DetailView.vue";
 
 const router = createRouter({
@@ -26,6 +28,16 @@ const router = createRouter({
           component: CatalogViewVue
         },
       ]
+    },
+    {
+      path: '/catalog/create',
+      name: 'create',
+      component: CreateSeriesViewVue
+    },
+    {
+      path: '/catalog/update/:type/:id',
+      name: 'update',
+      component: UpdateSeriesView
     },
     {
       path: "/catalog/:id",
