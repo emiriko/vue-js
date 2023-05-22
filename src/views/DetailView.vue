@@ -110,35 +110,35 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
         <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title">{{ data.title }}</div>
+        <div class="series-title">{{ data['title'] }}</div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
-            <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
+            <span v-for="genre in data['genres']">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
             <label>Creator</label>
-            <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
+            <span>{{ data['author'] }} {{ data['producer'] }} {{ data['director'] }}</span>
           </div>
           <div class="set">
             <label>Series ID: </label>
-            <span>{{ data.id }}</span>
+            <span>{{ data['id'] }}</span>
           </div>
           <div class="set">
             <label>Type: </label>
-            <span>{{ data.type }}</span>
+            <span>{{ data[type] }}</span>
           </div>
           <div class="set">
-            <label v-if="data.type === `SHOW`">Season(s): {{ data.seasons }}</label>
-            <label v-if="data.type === `BOOK`">Volume(s): {{ data.volumes }}</label>
+            <label v-if="data['type'] === `SHOW`">Season(s): {{ data['seasons'] }}</label>
+            <label v-if="data['type'] === `BOOK`">Volume(s): {{ data['volumes'] }}</label>
           </div>
           <div class="set">
-            <label v-if="data.type === `SHOW`">Episode(s): {{ data.episodes }}</label>
-            <label v-if="data.type === `BOOK`">Chapter(s): {{ data.chapters }}</label>
+            <label v-if="data['type'] === `SHOW`">Episode(s): {{ data['episodes'] }}</label>
+            <label v-if="data['type'] === `BOOK`">Chapter(s): {{ data['chapters'] }}</label>
           </div>
         </div>
         <div class="series-description">Description:</div>
-        <div class="series-description-text">{{ data.description }} iiais bdabsdibasdabsdi baisbdass bdiabsdbasd nasi ndasndiasnd asidbaisbdisaa </div>
+        <div class="series-description-text">{{ data['description'] }} </div>
       </div>
     </div>
 
