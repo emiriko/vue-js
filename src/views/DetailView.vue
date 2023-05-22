@@ -1,5 +1,4 @@
 <script lang="ts">
-import type { Ref } from 'vue';
 import {defineComponent, ref} from "vue";
 import ReviewCard from "@/components/common/ReviewCard.vue";
 import VoteButton from "@/components/common/VoteButton.vue";
@@ -25,6 +24,19 @@ interface Series {
   episodes: number;
 }
 
+interface Review {
+  id: number;
+  username: string;
+  reviewContent: string;
+  seriesId: number;
+}
+
+interface Vote {
+  username: string;
+  isUpvote: boolean;
+  seriesId: number;
+}
+
 export default defineComponent({
   name: "DetailView",
   components: {
@@ -32,18 +44,23 @@ export default defineComponent({
     ReviewCard
 
   }, methods: {
-    voteClick(type: String) {
-      if (type === "upvote") {
-        this.isUpvote=true;
-        this.isVoted=true;
+    voteClick(type: string) {
+      if (type === "upvote" && !this.myVote.isUpvote) {
+        this.myVote.isUpvote=true;
+        this.upvoteCount++;
+        this.downvoteCount--;
+      } else if (type === "downvote" && this.myVote.isUpvote){
+        this.myVote.isUpvote=false;
+        this.upvoteCount--;
+        this.downvoteCount++;
       } else {
-        this.isUpvote=false;
-        this.isVoted=true;
+        return
       }
-      console.log("isUpvote: " + this.isUpvote.valueOf);
-      console.log("isVoted: " + this.isVoted.valueOf);
+      axios.put(`${this.baseVoteUrl}/update/series_id/${this.seriesId}`, {
+        username: this.myUsername
+      });
     },
-    capitalized(str: String) {
+    capitalized(str: string) {
       const allLowerCase = str.toLowerCase();
       const capitalizedFirst = allLowerCase[0].toUpperCase();
       const rest = allLowerCase.slice(1);
@@ -53,7 +70,7 @@ export default defineComponent({
     openDialog() {
         this.isOpen = true;
       },
-      closeDialog(userChoice: Boolean) {
+      closeDialog(userChoice: boolean) {
         this.isOpen = false;
         if (userChoice) {
           axios.delete("http://localhost:8080/api/catalog/delete_series/"+this.data.id)
@@ -66,105 +83,198 @@ export default defineComponent({
             this.showErrorToast(error.message);
         })
         }
+      },
+    openDialogDeleteReview() {
+      this.isOpenDeleteReview = true;
+    },
+    closeDialogDeleteReview(userChoice: boolean) {
+      this.isOpenDeleteReview = false;
+      if (userChoice) {
+        axios.delete(`${this.baseReviewUrl}/delete/${this.myReview.id}`)
+            .then(() => {
+              this.showSuccessToast("Berhasil menghapus review");
+              this.myReview = {} as Review;
+            })
+            .catch((error) => {
+              console.log("error", error)
+              this.showErrorToast(error.message);
+            })
       }
+    },
+    openDialogPostReview() {
+      this.isOpenPostReview = true;
+    },
+    closeDialogPostReview(userChoice: boolean) {
+      this.isOpenPostReview = false;
+      if (userChoice) {
+        axios.post(`${this.baseReviewUrl}/create`, {
+          username: this.myUsername,
+          reviewContent: this.myReview.reviewContent,
+          seriesId: this.seriesId
+        })
+            .then((res) => {
+              this.showSuccessToast("Berhasil membuat review");
+              this.myReview = res.data;
+            })
+            .catch((error) => {
+              console.log("error", error)
+              this.showErrorToast(error.message);
+            })
+      }
+    },
+    openDialogEditReview() {
+      this.isEditReview = true;
+    },
+    closeDialogEditReview(userChoice: boolean) {
+      this.isEditReview = false;
+      if (userChoice) {
+        axios.put(`${this.baseReviewUrl}/update/${this.myReview.id}`, {
+          username: this.myUsername,
+          reviewContent: this.myReview.reviewContent,
+          seriesId: this.seriesId
+        })
+            .then((res) => {
+              this.showSuccessToast("Berhasil mengedit review");
+              this.myReview = res.data;
+            })
+            .catch((error) => {
+              console.log("error", error)
+              this.showErrorToast(error.message);
+            })
+      }
+    }
   },
   setup() {
-    const isUpvote = ref(false);
-    const isVoted  = ref(false);
+    const upvoteCount  = ref(0);
+    const downvoteCount  = ref(0);
     const toast = useToast();
+    const myUsername = "naila";
     
     const showSuccessToast = (message: string) => {
       toast.success(message);
     };
 
+    const splittedURL = window.location.pathname.split('/');
+    const baseReviewUrl = "http://localhost:8080/api/review";
+    const baseVoteUrl = "http://localhost:8080/api/vote";
+    const seriesId = splittedURL[splittedURL.length - 1];
+    const baseCatalogUrl = "http://localhost:8080/api/catalog";
+
     const showErrorToast = (message: string) => {
       toast.error(message);
     };
       return {
-      isUpvote,
-      isVoted,
+      upvoteCount,
+      downvoteCount,
+      myUsername,
       showSuccessToast,
-      showErrorToast
+      showErrorToast,
+      baseReviewUrl,
+      baseVoteUrl,
+      seriesId,
+      baseCatalogUrl
     };
+
   },
 
   data() {
     return {
       data: {} as Series,
       isOpen: false,
+      reviews: [] as Review[],
+      myReview: {} as Review,
+      myVote: {} as Vote,
+      isDataLoaded: false,
+      isOpenDeleteReview: false,
+      isOpenPostReview: false,
+      isEditReview: false
     }
   },
 
-  async mounted() {
-    await axios
-        .get(`${baseCatalogUrl}/${this.$route.params.id}`)
+  mounted() {
+    setTimeout(() => {
+      this.isDataLoaded = true;
+    }, 2000);
+
+    axios
+        .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
         .then(response => (this.data = response.data))
 
-    }
-})
+    // 1. Get Review by Series ID
+    axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
+    })
+        .then((response) => {
+          console.log(response.data);
+          this.reviews = response.data.filter((item: Review) => {
+            // Perform your filtering condition here
+            return item.username != this.myUsername
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
 
-// ---- | ----
-const url = window.location.pathname
-var splittedURL = url.split('/')
-const baseReviewUrl = "http://localhost:8080/api/review";
-const baseVoteUrl = "http://localhost:8080/api/vote";
-const seriesId = splittedURL[splittedURL.length - 1];
+    // 2. Get my Review by Series ID
+    axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}/me`, {
+      params: {
+        username: 'naila'
+        },
+      })
+        .then((response) => {
+          console.log(response.data);
+          this.myReview = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
-const baseCatalogUrl = "http://localhost:8080/api/catalog";
+    // 3. Get Vote Count by Series ID
+    axios.get(`${this.baseVoteUrl}/series_id/${this.seriesId}`, {
+    })
+        .then((response) => {
+          console.log(response.data);
+          this.upvoteCount = response.data.upvote;
+          this.downvoteCount = response.data.downvote;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
-// 1. Get Review by Series ID
-axios.get(`${baseReviewUrl}/series_id/${seriesId}`, {
+    // 4. Get My Vote by Series ID
+    axios.get(`${this.baseVoteUrl}/series_id/${this.seriesId}/me`, {
+      params: {
+        username: 'naila'
+      },
+      })
+        .then((response) => {
+          console.log(response.data);
+          this.myVote = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+  }
 })
-    .then(function (response) {
-      console.log(response.data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-// 2. Get my Review by Series ID
-axios.get(`${baseReviewUrl}/series_id/${seriesId}/me`, {
-  params: {
-    username: 'naila'
-  },
-})
-    .then(function (response) {
-      console.log(response.data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-// 3. Get Vote Count by Series ID
-axios.get(`${baseVoteUrl}/series_id/${seriesId}`, {
-})
-    .then(function (response) {
-      console.log(response.data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-// 4. Get My Vote by Series ID
-axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
-  params: {
-    username: 'naila'
-  },
-})
-    .then(function (response) {
-      console.log(response.data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+
 </script>
 
 <template>
    
   <div>
-    <div class="container">
+    <div class="container mb-5">
       <div class="poster">
         <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
+        <div class="flex justify-end gap-4">
+          <router-link :to="'/catalog/update/'+ data.type +'/' + data.id">
+            <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
+          </router-link>
+          <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
+            Delete
+          </button>
+        </div>
         <div class="series-title">{{ data.title }} ({{ data.year }})</div>
         <div class="series-detail">
           <div class="set">
@@ -197,25 +307,27 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row md:flex-row gap-20 my-6">
+    <div class="flex flex-col sm:flex-row md:flex-row gap-20 my-20">
       <div class="flex flex-col gap-10">
         <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Votes</div>
         <!-- Dua button untuk votes -->
         <div class="flex flex-row gap-5 justify-center">
-          <VoteButton :count=3 :isClicked=isUpvote type="upvote" @click="voteClick('upvote')"></VoteButton>
-          <VoteButton :count=3 :isClicked=!isUpvote&&isVoted type="downvote" @click="voteClick('downvote')"></VoteButton>
+          <VoteButton :count=upvoteCount :isClicked=myVote.isUpvote type="upvote" @click="voteClick('upvote')"></VoteButton>
+          <VoteButton :count=downvoteCount :isClicked="!myVote.isUpvote&&(Object.keys(myVote).length !== 0)" type="downvote" @click="voteClick('downvote')"></VoteButton>
         </div>
 
       </div>
       <div class="flex flex-col gap-10">
         <div class="flex flex-row justify-between">
           <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Your Review</div>
-          <router-link :to="'/catalog/update/'+ data.type +'/' + data.id">
-            <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
-          </router-link>
-          <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
-            Delete
-          </button>
+          <div v-if="Object.keys(myReview).length !== 0" class="flex gap-4">
+            <button @click="openDialogEditReview" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
+              Edit
+            </button>
+            <button @click="openDialogDeleteReview" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
+              Delete
+            </button>
+          </div>
           
             <!-- Dialog  -->
             <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpen">
@@ -229,17 +341,71 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
               </div>
             </div>
 
+          <!-- Dialog Delete Review -->
+          <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpenDeleteReview">
+            <div class="bg-grey rounded-lg p-4">
+              <!-- Dialog content goes here -->
+              <h2>Are you sure you want to delete your review?</h2>
+              <div class="flex justify-end mt-4">
+                <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="closeDialogDeleteReview(false)">No</button>
+                <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="closeDialogDeleteReview(true)">Yes</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dialog  Post Review -->
+          <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpenPostReview">
+            <div class="bg-grey rounded-lg p-4">
+              <!-- Dialog content goes here -->
+              <h2 class="text-white text-2xl font-bold m-4">Post Your Review</h2>
+              <textarea id="reviewContent" cols="40" rows="5" required v-model="myReview.reviewContent" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" placeholder="Your review goes here..."></textarea>
+              <div class="flex justify-end mt-4 gap-4">
+                <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="closeDialogPostReview(false)">Cancel</button>
+                <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2 text-white" @click="closeDialogPostReview(true)">Post</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dialog  Edit Review -->
+          <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isEditReview">
+            <div class="bg-grey rounded-lg p-4">
+              <!-- Dialog content goes here -->
+              <h2 class="text-white text-2xl font-bold m-4">Edit Your Review</h2>
+              <textarea id="reviewContent" cols="40" rows="5" required v-model="myReview.reviewContent" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" placeholder="Your review goes here..."></textarea>
+              <div class="flex justify-end mt-4 gap-4">
+                <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="closeDialogEditReview(false)">Cancel</button>
+                <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2 text-white" @click="closeDialogEditReview(true)">Edit</button>
+              </div>
+            </div>
+          </div>
          
           
         </div>
-        <ReviewCard review="my review" username="my-username"></ReviewCard>
+        <ReviewCard v-if="Object.keys(myReview).length !== 0" :review=myReview.reviewContent :username=myUsername></ReviewCard>
+        <div v-if="Object.keys(myReview).length === 0" class="text-justify">
+          You haven't left a review yet.
+          <button @click="openDialogPostReview" class="text-indigo font-bold">
+            Add yours!
+          </button>
+        </div>
       </div>
     </div>
     <div class="flex flex-col gap-10 mt-20 min-w-full max-w-[640px]">
       <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Other Reviews</div>
       <!-- review card untuk setiap review -->
-      <ReviewCard review="hashdhshdhs" username="useued"></ReviewCard>
-      <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
+      <div v-if="isDataLoaded">
+        <div v-for="review in reviews.slice(0, 3)" :key="review.id">
+          <ReviewCard :review=review.reviewContent :username=review.username></ReviewCard>
+        </div>
+      </div>
+      <div v-if="reviews.length > 3">
+        <router-link :to="'/catalog/review/' + data.id">
+          <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
+        </router-link>
+      </div>
+      <div v-if="reviews.length === 0">
+        <p>There's no other reviews yet</p>
+      </div>
     </div>
   </div>
 
