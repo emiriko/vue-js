@@ -212,6 +212,8 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
               </div>
             </div>
 
+         
+          
         </div>
         <ReviewCard review="my review" username="my-username"></ReviewCard>
       </div>
