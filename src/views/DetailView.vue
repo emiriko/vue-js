@@ -301,7 +301,7 @@ export default defineComponent({
   },
 
   mounted() {
-    // document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaXRyYSIsImlhdCI6MTY4NDgyNTU0NCwiZXhwIjoxNjg0ODI2OTg0fQ.pPpPxvyJtluPvirinsHrRtcUZJhi1g0M1vv0jMlb8sI; path=/;';
+    document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWlsYSIsImlhdCI6MTY4NDgzMjM2OCwiZXhwIjoxNjg0ODMzODA4fQ.l8cmZZ-jefKQ0QuC6i8ycqq9rS3_AJcPRPchLchfffA; path=/;';
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
