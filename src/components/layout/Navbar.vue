@@ -1,5 +1,5 @@
 <script lang="ts"> 
-import { defineComponent, computed } from 'vue';
+import { defineComponent } from 'vue';
 import { RouterLink } from 'vue-router';
 import { Bars3Icon } from '@heroicons/vue/24/solid'
 import { useMenu } from '@/stores';
@@ -35,11 +35,6 @@ export default defineComponent({
             },
         ] as Menu[]
   }),
-  methods: {
-    handleOpenHamburger(){
-        
-    }
-  },
   setup: () => {
     const menu = useMenu()
     return {
