@@ -11,6 +11,10 @@ import {Multiselect} from 'vue-multiselect';
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
+const baseCatalogUrl = "http://localhost:8080/api/catalog";
+
+
+
 export default defineComponent({
   name: 'Film Form',
   components: {
@@ -73,7 +77,7 @@ export default defineComponent({
         year: this.year
       }
       if (this.method === "POST") {
-        await axios.post("http://localhost:8080/api/catalog/create_film", payload,
+        await axios.post(`${baseCatalogUrl}/create_film`, payload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -88,7 +92,7 @@ export default defineComponent({
             this.showErrorToast(error.message);
         })
       } else {
-        await axios.put("http://localhost:8080/api/catalog/update_film/"+this.id, payload, 
+        await axios.put(`${baseCatalogUrl}/update_film/${this.id}`, payload, 
         {
           headers: {
             "Content-Type": "application/json",
@@ -118,7 +122,7 @@ export default defineComponent({
     if (props.method === "PUT") {
       const fetchData = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/catalog/'+props.id);
+            const response = await axios.get(`${baseCatalogUrl}/${props.id}`);
             // Assign the response data to the variables
             title.value = response.data.title;
             description.value = response.data.description;

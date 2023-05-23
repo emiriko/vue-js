@@ -14,6 +14,18 @@ interface Series {
   type: string;
 }
 
+interface User {
+  role: string;
+  username: string;
+  name: string;
+  email: string;
+}
+
+const baseCatalogUrl = "http://localhost:8080/api/catalog";
+
+const baseAuthUrl = "http://localhost:8080/api/auth";
+
+
 export default defineComponent ({
     name: "Catalog",
     components: {},
@@ -21,22 +33,28 @@ export default defineComponent ({
     data() {
         return {
             searchText: "",
-            data: [] as Series[]
+            data: [] as Series[],
+            currentUser: {
+                "role": "ADMIN"
+            } as User
         };
     },
 
     async mounted() {
-    await axios
-        .get('http://localhost:8080/api/catalog/')
-        .then(response => (this.data = response.data))
-
+        await axios
+            .get(`${baseCatalogUrl}/`)
+            .then(response => (this.data = response.data))
+        await axios
+            .get(`${baseAuthUrl}/verify`)
+            .then(response => (this.currentUser = response.data.user))
+    
     },
 
     methods: {
         async searchSeries() {
             this.$router.replace({path: "/catalog/search",query: {keyword: this.searchText.toLowerCase()}});
             
-            await axios.get("http://localhost:8080/api/catalog/search", {params: {keyword: this.searchText}})
+            await axios.get(`${baseCatalogUrl}/search`, {params: {keyword: this.searchText}})
             .then((response) => {
                 this.data = response.data
                 console.log(this.data)
@@ -52,7 +70,7 @@ export default defineComponent ({
 
     <div>
         <input type="text" placeholder="Search by Genres, Title, Creator, and id" v-model="searchText" class="px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full"/>
-        <button id="search-button" @click="()=>$router.push('/catalog/create/')" class="px-8 py-2 text-center rounded-xl font-bold">Create</button>
+        <button v-if="currentUser['role'] === 'ADMIN'" id="search-button" @click="()=>$router.push('/catalog/create/')" class="px-8 py-2 text-center rounded-xl font-bold">Create</button>
         
         <button id="search-button" @click="searchSeries" class="px-8 py-2 text-center rounded-xl font-bold">Search</button>
 

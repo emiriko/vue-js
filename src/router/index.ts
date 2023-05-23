@@ -32,12 +32,14 @@ const router = createRouter({
     {
       path: '/catalog/create',
       name: 'create',
-      component: CreateSeriesViewVue
+      component: CreateSeriesViewVue,
+      meta: { requiresRoleCheck: true }
     },
     {
       path: '/catalog/update/:type/:id',
       name: 'update',
-      component: UpdateSeriesView
+      component: UpdateSeriesView,
+      meta: { requiresRoleCheck: true }
     },
     {
       path: "/catalog/:id",

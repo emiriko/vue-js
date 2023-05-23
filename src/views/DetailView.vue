@@ -3,6 +3,7 @@ import type { Ref } from 'vue';
 import {defineComponent, ref} from "vue";
 import ReviewCard from "@/components/common/ReviewCard.vue";
 import VoteButton from "@/components/common/VoteButton.vue";
+import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid';
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
@@ -24,11 +25,20 @@ interface Series {
   episodes: number;
 }
 
+interface User {
+  name: string;
+  email: string;
+  role: string;
+  username: string
+}
+
 export default defineComponent({
   name: "DetailView",
   components: {
     VoteButton,
-    ReviewCard
+    ReviewCard,
+    PencilIcon,
+    TrashIcon
 
   }, methods: {
     voteClick(type: String) {
@@ -56,7 +66,7 @@ export default defineComponent({
       closeDialog(userChoice: Boolean) {
         this.isOpen = false;
         if (userChoice) {
-          axios.delete("http://localhost:8080/api/catalog/delete_series/"+this.data.id)
+          axios.delete(`${baseCatalogUrl}/delete_series/${seriesId}`)
         .then((res) => {
             this.showSuccessToast(res.data)
             this.$router.push('/catalog/');
@@ -92,6 +102,9 @@ export default defineComponent({
     return {
       data: {} as Series,
       isOpen: false,
+      currentUser: {
+        "role": "ADMIN"
+      } as User
     }
   },
 
@@ -100,6 +113,9 @@ export default defineComponent({
         .get(`${baseCatalogUrl}/${this.$route.params.id}`)
         .then(response => (this.data = response.data))
 
+    await axios
+        .get(`${baseAuthUrl}/verify`)
+        .then(response => (this.currentUser = response.data.user))
     }
 })
 
@@ -112,6 +128,8 @@ const baseVoteUrl = "http://localhost:8080/api/vote";
 const seriesId = splittedURL[splittedURL.length - 1];
 
 const baseCatalogUrl = "http://localhost:8080/api/catalog";
+
+const baseAuthUrl = "http://localhost:8080/api/auth";
 
 // 1. Get Review by Series ID
 axios.get(`${baseReviewUrl}/series_id/${seriesId}`, {
@@ -161,11 +179,20 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
    
   <div>
     <div class="container">
+      
       <div class="poster">
         <img v-bind:src="data['imageUrl']" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title">{{ data['title'] }}</div>
+        <div class="series-title">{{ data['title'] }} ({{ data['year'] }})</div>
+        <div class="series-admin flex space-x-4" v-if="currentUser['role'] === 'ADMIN'">
+          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
+            <PencilIcon class="w-8 h-8  text-indigo"></PencilIcon>
+          </router-link>
+          <button @click="openDialog">
+            <TrashIcon class="w-8 h-8  text-indigo"></TrashIcon>
+          </button>
+        </div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
@@ -210,12 +237,9 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
       <div class="flex flex-col gap-10">
         <div class="flex flex-row justify-between">
           <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Your Review</div>
-          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
+          
             <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
-          </router-link>
-          <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
-            Delete
-          </button>
+        
           
             <!-- Dialog  -->
             <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpen">

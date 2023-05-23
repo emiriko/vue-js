@@ -60,6 +60,6 @@ export default defineComponent({
                 </router-link>
             </li>
         </ul>
-        <Bars3Icon class="h-6 w-6 text-white lg:hidden flex cursor-pointer m-0" type = "button" @click="menu.toggleHamburger()"/> 
+        <Bars3Icon class="h-6 w-6 text-white lg:hidden flex cursor-pointer m-0" type = "button" @click="menu.toggleHamburger"/> 
     </nav>
 </template>
