@@ -57,16 +57,19 @@ export default defineComponent({
           isUpvote = false;
         }
         axios.post(`${this.baseVoteUrl}/vote`, {
-          username: this.myUsername,
           isUpvote: `${isUpvote}`,
           seriesId: this.seriesId
+        }, {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
         })
             .then((res) => {
               this.myVote = res.data;
             })
             .catch((error) => {
-              console.log("error", error)
-              this.showErrorToast(error.message);
+              console.log("error", error.response.data.message)
+              this.showErrorToast(error.response.data.message);
               this.myVote = {} as Vote;
             })
         return;
@@ -82,8 +85,10 @@ export default defineComponent({
       } else {
         return;
       }
-      axios.put(`${this.baseVoteUrl}/update/series_id/${this.seriesId}`, {
-        username: this.myUsername
+      axios.put(`${this.baseVoteUrl}/update/series_id/${this.seriesId}`, {}, {
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
       });
     },
     capitalized(str: string) {
@@ -105,8 +110,8 @@ export default defineComponent({
             this.$router.push('/catalog/');
         })
         .catch((error) => {
-            console.log("error", error)
-            this.showErrorToast(error.message);
+            console.log("error", error.response.data.message)
+            this.showErrorToast(error.response.data.message);
         })
         }
       },
@@ -116,14 +121,18 @@ export default defineComponent({
     closeDialogDeleteReview(userChoice: boolean) {
       this.isOpenDeleteReview = false;
       if (userChoice) {
-        axios.delete(`${this.baseReviewUrl}/delete/${this.myReview.id}`)
+        axios.delete(`${this.baseReviewUrl}/delete/${this.myReview.id}`, {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        })
             .then(() => {
               this.showSuccessToast("Berhasil menghapus review");
               this.myReview = {} as Review;
             })
             .catch((error) => {
-              console.log("error", error)
-              this.showErrorToast(error.message);
+              console.log("error", error.response.data.message)
+              this.showErrorToast(error.response.data.message);
             })
       }
     },
@@ -134,17 +143,20 @@ export default defineComponent({
       this.isOpenPostReview = false;
       if (userChoice) {
         axios.post(`${this.baseReviewUrl}/create`, {
-          username: this.myUsername,
           reviewContent: this.myReview.reviewContent,
           seriesId: this.seriesId
+        }, {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
         })
             .then((res) => {
               this.showSuccessToast("Berhasil membuat review");
               this.myReview = res.data;
             })
             .catch((error) => {
-              console.log("error", error)
-              this.showErrorToast(error.message);
+              console.log("error", error.response.data.message)
+              this.showErrorToast(error.response.data.message);
               this.myReview = {} as Review;
             })
       } else {
@@ -157,17 +169,20 @@ export default defineComponent({
     closeDialogEditReview() {
       this.isEditReview = false;
       axios.put(`${this.baseReviewUrl}/update/${this.myReview.id}`, {
-        username: this.myUsername,
         reviewContent: this.myReview.reviewContent,
         seriesId: this.seriesId
+      }, {
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
       })
           .then((res) => {
             this.showSuccessToast("Berhasil mengedit review");
             this.myReview = res.data;
           })
           .catch((error) => {
-            console.log("error", error)
-            this.showErrorToast(error.message);
+            console.log("error", error.response.data.message)
+            this.showErrorToast(error.response.data.message);
           })
     },
     handleVoteChange(type: string, reviewId: number) {
@@ -210,33 +225,47 @@ export default defineComponent({
         }
       }
       axios.post(`${this.baseReviewUrl}/${type}-review/`, {
-        username: this.myUsername,
         isVoted: `${isVoted}`,
         reviewId: reviewId
+      }, {
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
       })
           .then(() => {
             this.showSuccessToast(`Berhasil ${type} review`);
           })
           .catch((error) => {
-            console.log("error", error)
-            this.showErrorToast(error.message);
+            console.log("error", error.response.data.message)
+            this.showErrorToast(error.response.data.message);
           })
 
+    }, getCookieValue(cookieName: String) {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Check if the cookie starts with the specified name
+        if (cookie.startsWith(cookieName + '=')) {
+          // Return the value of the cookie
+          return cookie.substring(cookieName.length + 1);
+        }
+      }
+      // Cookie not found
+      return "";
     }
   },
   setup() {
     const upvoteCount  = ref(0);
     const downvoteCount  = ref(0);
     const toast = useToast();
-    const myUsername = "hani";
 
     const showSuccessToast = (message: string) => {
       toast.success(message);
     };
 
     const splittedURL = window.location.pathname.split('/');
-    const baseReviewUrl = "http://localhost:8080/api/review";
-    const baseVoteUrl = "http://localhost:8080/api/vote";
+    const baseReviewUrl = "http://localhost:8081/api/review";
+    const baseVoteUrl = "http://localhost:8081/api/vote";
     const seriesId = splittedURL[splittedURL.length - 1];
     const baseCatalogUrl = "http://localhost:8080/api/catalog";
 
@@ -246,7 +275,6 @@ export default defineComponent({
       return {
       upvoteCount,
       downvoteCount,
-      myUsername,
       showSuccessToast,
       showErrorToast,
       baseReviewUrl,
@@ -267,14 +295,19 @@ export default defineComponent({
       isDataLoaded: false,
       isOpenDeleteReview: false,
       isOpenPostReview: false,
-      isEditReview: false
+      isEditReview: false,
+      token: ""
     }
   },
 
   mounted() {
+    // document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaXRyYSIsImlhdCI6MTY4NDgyNTU0NCwiZXhwIjoxNjg0ODI2OTg0fQ.pPpPxvyJtluPvirinsHrRtcUZJhi1g0M1vv0jMlb8sI; path=/;';
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
+
+    this.token = this.getCookieValue("token");
+    console.log(this.token);
 
     axios
         .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
@@ -282,16 +315,13 @@ export default defineComponent({
 
     // 1. Get Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
-      params: {
-        username: this.myUsername
-      },
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
     })
         .then((response) => {
           console.log(response.data);
-          this.reviews = response.data.filter((item: Review) => {
-            // Perform your filtering condition here
-            return item.username != this.myUsername
-          });
+          this.reviews = response.data;
         })
         .catch((error) => {
           console.log(error);
@@ -300,10 +330,10 @@ export default defineComponent({
 
     // 2. Get my Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}/me`, {
-      params: {
-        username: this.myUsername
-       },
-      })
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
+    })
         .then((response) => {
           console.log(response.data);
           this.myReview = response.data;
@@ -326,10 +356,10 @@ export default defineComponent({
 
     // 4. Get My Vote by Series ID
     axios.get(`${this.baseVoteUrl}/series_id/${this.seriesId}/me`, {
-      params: {
-        username: this.myUsername
-      },
-      })
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
+    })
         .then((response) => {
           console.log(response.data);
           this.myVote = response.data;
@@ -465,8 +495,8 @@ export default defineComponent({
         </div>
         <ReviewCard v-if="Object.keys(myReview).length !== 0"
                     :review=myReview.reviewContent
-                    :username=myUsername
-                    :my-username="myUsername"
+                    :username=myReview.username
+                    :my-username=myReview.username
                     :is-upvote="myReview.isUpvote"
                     :is-voted="myReview.isVoted"
                     :upvote="myReview.upvote"
@@ -487,9 +517,10 @@ export default defineComponent({
       <!-- review card untuk setiap review -->
       <div v-if="isDataLoaded">
         <div v-for="review in reviews.slice(0, 3)" :key="review.id">
-          <ReviewCard :review=review.reviewContent
+          <ReviewCard v-if="review.username !== myReview.username"
+                      :review=review.reviewContent
                       :username=review.username
-                      :my-username="myUsername"
+                      :my-username=myReview.username
                       :is-upvote=review.isUpvote
                       :is-voted="review.isVoted"
                       :upvote="review.upvote"
@@ -506,7 +537,7 @@ export default defineComponent({
           <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
         </router-link>
       </div>
-      <div v-if="reviews.length === 0">
+      <div v-if="reviews.length === 0 || (reviews.length === 1 && reviews[0].username === myReview.username)">
         <p>There's no other reviews yet</p>
       </div>
     </div>
