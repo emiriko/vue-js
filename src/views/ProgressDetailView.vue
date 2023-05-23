@@ -1,11 +1,12 @@
 <script lang="ts">
-import type { Ref } from 'vue';
 import {defineComponent, ref} from "vue";
 import ReviewCard from "@/components/common/ReviewCard.vue";
 import VoteButton from "@/components/common/VoteButton.vue";
+import Button from "@/components/common/Button.vue";
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
+
 
 interface Series {
   title: string;
@@ -24,12 +25,17 @@ interface Series {
   episodes: number;
 }
 
+interface Progress {
+    progres: number;
+    status: string;
+}
+
 export default defineComponent({
   name: "DetailView",
   components: {
     VoteButton,
-    ReviewCard
-
+    ReviewCard,
+    "update-button": Button,
   }, methods: {
     voteClick(type: String) {
       if (type === "upvote") {
@@ -49,7 +55,6 @@ export default defineComponent({
 
       return capitalizedFirst+rest;
     },
-    
     openDialog() {
         this.isOpen = true;
       },
@@ -66,38 +71,9 @@ export default defineComponent({
             this.showErrorToast(error.message);
         })
         }
-      },
-    open() {
-      this.create = true;
-    },
-    async createProgress(e: Event) {
-      e.preventDefault()
-      
-      const payload = {
-        episodeOrChapter: this.episodeOrChapter,
-        seasonsOrVolume: this.seasonsOrVolume,
-        status: this.status,
       }
-      await axios.post("http://localhost:8080/api/progress/" + this.data.id, payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        }
-      })
-      .then((res) => {
-          this.showSuccessToast("Succesfully added " +res.data.title)
-          this.$router.push('/catalog/');
-      })
-      .catch((error) => {
-          console.log("error", error)
-          this.showErrorToast(error.message);
-      })}
-      
   },
   setup() {
-    const episodeOrChapter = ref(0);
-    const seasonsOrVolume = ref(0);
-    const status = ref('');
     const isUpvote = ref(false);
     const isVoted  = ref(false);
     const toast = useToast();
@@ -113,10 +89,7 @@ export default defineComponent({
       isUpvote,
       isVoted,
       showSuccessToast,
-      showErrorToast,
-      episodeOrChapter,
-      seasonsOrVolume,
-      status
+      showErrorToast
     };
   },
 
@@ -124,10 +97,6 @@ export default defineComponent({
     return {
       data: {} as Series,
       isOpen: false,
-      create: false,
-      json : {
-
-    }
     }
   },
 
@@ -135,8 +104,8 @@ export default defineComponent({
     await axios
         .get(`${baseCatalogUrl}/${this.$route.params.id}`)
         .then(response => (this.data = response.data))
+    },
 
-    }
 })
 
 
@@ -148,6 +117,7 @@ const baseVoteUrl = "http://localhost:8080/api/vote";
 const seriesId = splittedURL[splittedURL.length - 1];
 
 const baseCatalogUrl = "http://localhost:8080/api/catalog";
+const baseProgressUrl = "http://localhost:8080/api/progress";
 
 // 1. Get Review by Series ID
 axios.get(`${baseReviewUrl}/series_id/${seriesId}`, {
@@ -191,90 +161,75 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
     .catch(function (error) {
       console.log(error);
     });
+// 5. Get Progress by Series ID
+axios.get(`${baseProgressUrl}/${seriesId}`, {
+  params: {
+    username: 'naila'
+  },
+})
+    .then(function (response) {
+      console.log(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 </script>
 
 <template>
-   
+
   <div>
     <div class="container">
       <div class="poster">
-        <img v-bind:src="data['imageUrl']" alt="image"/>
+        <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title">{{ data['title'] }}</div>
+        <div class="series-title">{{ data.title }} ({{ data.year }})</div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
-            <span v-for="genre in data['genres']">{{ capitalized(genre)+ " " }} </span>
+            <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
             <label>Creator</label>
-            <span>{{ data['author'] }} {{ data['producer'] }} {{ data['director'] }}</span>
+            <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
           </div>
           <div class="set">
             <label>Series ID: </label>
-            <span>{{ data['id'] }}</span>
+            <span>{{ data.id }}</span>
           </div>
           <div class="set">
             <label>Type: </label>
-            <span>{{ data['type'] }}</span>
+            <span>{{ data.type }}</span>
           </div>
           <div class="set">
-            <label v-if="data['type'] === `SHOW`">Season(s): {{ data['seasons'] }}</label>
-            <label v-if="data['type'] === `BOOK`">Volume(s): {{ data['volumes'] }}</label>
+            <label v-if="data.type === `SHOW`">Season(s): {{ data.seasons }}</label>
+            <label v-if="data.type === `BOOK`">Volume(s): {{ data.volumes }}</label>
           </div>
           <div class="set">
-            <label v-if="data['type'] === `SHOW`">Episode(s): {{ data['episodes'] }}</label>
-            <label v-if="data['type'] === `BOOK`">Chapter(s): {{ data['chapters'] }}</label>
+            <label v-if="data.type === `SHOW`">Episode(s): {{ data.episodes }}</label>
+            <label v-if="data.type === `BOOK`">Chapter(s): {{ data.chapters }}</label>
           </div>
         </div>
         <div class="series-description">Description:</div>
-        <div class="series-description-text">{{ data['description'] }} </div>
+        <div class="series-description-text">{{ data.description }} iiais bdabsdibasdabsdi baisbdass bdiabsdbasd nasi ndasndiasnd asidbaisbdisaa </div>
         
-        <button @click="open" class="text-indigo lg:text-2xl md:text-xl text-xl font-bold">Add to Progress</button>
-              <!-- Dialog  -->
-            <div class="fixed inset-0 flex items-center justify-center z-10" v-if="create">
-              <div class="bg-grey border-2 rounded-lg p-4">
-                <!-- Dialog content goes here -->
-                <form>
-                  <h5 class = "capitalize text-3xl font-bold text-white w-full"> Create Progress </h5>
-                  
-                  <div>Season or Volume: 
-                    <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-for="season in data['seasons']" v-model="seasonsOrVolume">
-                      <option disabled value="">Please select one</option>
-                      <option>{{season}}</option>
-                    </select>
-                    <select class="bg-grey rounded-lg" v-if="data['type'] === `BOOK`" v-for="volume in data['volumes']" v-model="seasonsOrVolume">
-                      <option disabled value="">Please select one</option>
-                      <option>{{volume}}</option>
-                    </select>
-                  </div>
-                  <div> Episode or Chapter: 
-                    <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-for="episode in data['episodes']" v-model="episodeOrChapter">
-                      <option disabled value="">Please select one</option>
-                      <option>{{episode}}</option>
-                    </select>
-                    <select class="bg-grey rounded-lg" v-if="data['type'] === `BOOK`" v-for="chapter in data['chapters']" v-model="episodeOrChapter">
-                      <option disabled value="">Please select one</option>
-                      <option>{{chapter}}</option>
-                    </select>
-                  </div>
-                  <div>Status: 
-                    <select class="bg-grey rounded-lg" v-model="status">
-                      <option disabled value="">Please select one</option>
-                      <option>Plan to watch</option>
-                      <option>Watching</option>
-                      <option>Completed</option>
-                      <option>Dropped</option>
-                    </select>
-                  </div>
-                  <div class="flex justify-end mt-4">
-                    <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="create=false">Cancel</button>
-                    <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="createProgress">Add</button>
-                  </div>
-                </form>
-              </div>
-            </div>
+        <div class="set">
+            <label>Progress: </label>
+            <span>{{ data.episodes }} / {{ data.episodes }} episodes </span>
+        </div>
+
+        <div class="set">
+            <label>Status: </label>
+            <span>{{ data.description }} completed </span>
+        </div>        
+        <div>
+          <b-dropdown split text="Split Dropdown" class="m-2">
+            <b-dropdown-item href="#">Action</b-dropdown-item>
+            <b-dropdown-item href="#">Another action</b-dropdown-item>
+            <b-dropdown-item href="#">Something else here...</b-dropdown-item>
+          </b-dropdown>
+        </div>
+        <update-button type="indigo" className = "text-center justify-center"> Update Progress </update-button>
       </div>
     </div>
 
@@ -291,7 +246,7 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
       <div class="flex flex-col gap-10">
         <div class="flex flex-row justify-between">
           <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Your Review</div>
-          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
+          <router-link :to="'/catalog/update/'+ data.type +'/' + data.id">
             <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
           </router-link>
           <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
@@ -370,7 +325,7 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
     text-align: center;
   }
 
-  .container .info .set, .container .info .series-description, .container .info .series-description-text{
+  .container .info .set, .container .info .series-description, .container .info .series-description-text {
     text-align: justify;
     padding-left: 1%;
   }
@@ -388,6 +343,7 @@ axios.get(`${baseVoteUrl}/series_id/${seriesId}/me`, {
     flex: 1;
     margin-top: 20px;
   }
+
 
 }
 </style>
