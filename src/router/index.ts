@@ -8,6 +8,7 @@ import CatalogViewVue from '@/views/CatalogView.vue'
 import CreateSeriesViewVue from '@/views/CreateSeriesView.vue'
 import UpdateSeriesView from '@/views/UpdateSeriesView.vue'
 import DetailView from "@/views/DetailView.vue";
+import ReviewAllView from "@/views/ReviewAllView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,11 @@ const router = createRouter({
       path: "/catalog/:id",
       name: "detail",
       component: DetailView,
+    },
+    {
+      path: "/catalog/review/:id",
+      name: "review",
+      component: ReviewAllView,
     },
     {
       path: "/progress",
