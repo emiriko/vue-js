@@ -5,7 +5,7 @@ import VoteButton from "@/components/common/VoteButton.vue";
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
-
+import Cookies from 'js-cookie';
 
 interface Series {
   title: string;
@@ -119,6 +119,7 @@ export default defineComponent({
       this.isOpenDeleteReview = true;
     },
     closeDialogDeleteReview(userChoice: boolean) {
+      let myUsername = this.myReview.username;
       this.isOpenDeleteReview = false;
       if (userChoice) {
         axios.delete(`${this.baseReviewUrl}/delete/${this.myReview.id}`, {
@@ -190,12 +191,15 @@ export default defineComponent({
       const review: Review | undefined = this.reviews.find(item => item.id === reviewId);
       const foundReview: Review = review ?? {} as Review;
       let isVoted = true;
+      let message = "";
 
       if (type === "upvote") {
+        message = "Berhasil upvote review";
         if (foundReview.isUpvote) {
           foundReview.isUpvote = false;
           foundReview.isVoted = false;
           foundReview.upvote--;
+          message = "Berhasil membatalkan vote";
         } else if (foundReview.isVoted){
           foundReview.isUpvote = true;
           foundReview.upvote++;
@@ -207,6 +211,7 @@ export default defineComponent({
           isVoted = false;
         }
       } else {
+        message = "Berhasil downvote review";
         if (foundReview.isUpvote){
           foundReview.isUpvote = false;
           foundReview.upvote--;
@@ -216,6 +221,7 @@ export default defineComponent({
           foundReview.isVoted = false;
           foundReview.downvote--;
           isVoted = true;
+          message = "Berhasil membatalkan vote";
         }
         else {
           foundReview.isUpvote = false;
@@ -233,25 +239,13 @@ export default defineComponent({
         }
       })
           .then(() => {
-            this.showSuccessToast(`Berhasil ${type} review`);
+            this.showSuccessToast(message);
           })
           .catch((error) => {
             console.log("error", error.response.data.message)
             this.showErrorToast(error.response.data.message);
           })
 
-    }, getCookieValue(cookieName: String) {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Check if the cookie starts with the specified name
-        if (cookie.startsWith(cookieName + '=')) {
-          // Return the value of the cookie
-          return cookie.substring(cookieName.length + 1);
-        }
-      }
-      // Cookie not found
-      return "";
     }
   },
   setup() {
@@ -264,8 +258,8 @@ export default defineComponent({
     };
 
     const splittedURL = window.location.pathname.split('/');
-    const baseReviewUrl = "http://localhost:8081/api/review";
-    const baseVoteUrl = "http://localhost:8081/api/vote";
+    const baseReviewUrl = "http://34.143.188.191/api/review";
+    const baseVoteUrl = "http://34.143.188.191/api/vote";
     const seriesId = splittedURL[splittedURL.length - 1];
     const baseCatalogUrl = "http://localhost:8080/api/catalog";
 
@@ -296,39 +290,26 @@ export default defineComponent({
       isOpenDeleteReview: false,
       isOpenPostReview: false,
       isEditReview: false,
-      token: ""
+      token: "",
+      myUsername: ""
     }
   },
 
   mounted() {
-    // document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWlsYSIsImlhdCI6MTY4NDgzMjM2OCwiZXhwIjoxNjg0ODMzODA4fQ.l8cmZZ-jefKQ0QuC6i8ycqq9rS3_AJcPRPchLchfffA; path=/;';
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
 
-    this.token = this.getCookieValue("token");
+    this.token = Cookies.get('token') || "";
     console.log(this.token);
 
     axios
         .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
         .then(response => (this.data = response.data))
 
-    // 1. Get Review by Series ID
-    axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
-      headers: {
-        Authorization: `Bearer ${this.token}`
-      }
-    })
-        .then((response) => {
-          console.log(response.data);
-          this.reviews = response.data;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
 
 
-    // 2. Get my Review by Series ID
+    // 1. Get my Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}/me`, {
       headers: {
         Authorization: `Bearer ${this.token}`
@@ -337,6 +318,21 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data);
           this.myReview = response.data;
+          this.myUsername = this.myReview.username;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+    // 2. Get Review by Series ID
+    axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
+    })
+        .then((response) => {
+          console.log(response.data);
+          this.reviews = response.data.filter((item: Review) => item.username != this.myUsername);
         })
         .catch((error) => {
           console.log(error);
@@ -517,8 +513,7 @@ export default defineComponent({
       <!-- review card untuk setiap review -->
       <div v-if="isDataLoaded">
         <div v-for="review in reviews.slice(0, 3)" :key="review.id">
-          <ReviewCard v-if="review.username !== myReview.username"
-                      :review=review.reviewContent
+          <ReviewCard :review=review.reviewContent
                       :username=review.username
                       :my-username=myReview.username
                       :is-upvote=review.isUpvote
@@ -537,7 +532,7 @@ export default defineComponent({
           <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
         </router-link>
       </div>
-      <div v-if="reviews.length === 0 || (reviews.length === 1 && reviews[0].username === myReview.username)">
+      <div v-if="reviews.length === 0">
         <p>There's no other reviews yet</p>
       </div>
     </div>
