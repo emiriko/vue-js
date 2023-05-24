@@ -23,7 +23,7 @@ interface User {
 
 const baseCatalogUrl = "http://localhost:8080/api/catalog";
 
-const baseAuthUrl = "http://localhost:8080/api/auth";
+const baseAuthUrl = "http://34.124.246.185/api/auth";
 
 
 export default defineComponent ({
@@ -36,19 +36,11 @@ export default defineComponent ({
             data: [] as Series[],
             currentUser: {
                 "role": "ADMIN"
-            } as User
+            } as User,
+            token: ""
         };
     },
 
-    async mounted() {
-        await axios
-            .get(`${baseCatalogUrl}/`)
-            .then(response => (this.data = response.data))
-        await axios
-            .get(`${baseAuthUrl}/verify`)
-            .then(response => (this.currentUser = response.data.user))
-    
-    },
 
     methods: {
         async searchSeries() {
@@ -60,6 +52,36 @@ export default defineComponent ({
                 console.log(this.data)
             });
         },
+        getCookieValue(cookieName: String) {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if the cookie starts with the specified name
+                if (cookie.startsWith(cookieName + '=')) {
+                // Return the value of the cookie
+                return cookie.substring(cookieName.length + 1);
+                }
+            }
+            // Cookie not found
+            return "";
+        },
+    },
+    
+    async mounted() {
+        this.token = this.getCookieValue("token");
+        console.log(this.token);
+
+        await axios
+            .get(`${baseCatalogUrl}/`)
+            .then(response => (this.data = response.data))
+        await axios
+            .get(`${baseAuthUrl}/verify`, {
+            headers: {
+                Authorization: `Bearer ${this.token}`
+            }
+            })
+            .then(response => (this.currentUser = response.data.user))
+    
     },
 })
 </script>

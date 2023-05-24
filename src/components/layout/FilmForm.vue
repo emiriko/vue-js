@@ -44,10 +44,13 @@ export default defineComponent({
        "DRAMA",
        "HISTORICAL",
       ],
-      json : {
-
-      }
+      token: ""
     };
+  },
+  mounted() {
+        this.token = this.getCookieValue("token");
+        console.log(this.token);
+    
   },
   props: {
     method: {
@@ -81,6 +84,7 @@ export default defineComponent({
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.token}`,
           }
         })
         .then((res) => {
@@ -96,6 +100,7 @@ export default defineComponent({
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.token}`
           }
         })
         .then((res) => {
@@ -110,7 +115,20 @@ export default defineComponent({
         
       }
       
-    }
+    },
+    getCookieValue(cookieName: String) {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Check if the cookie starts with the specified name
+        if (cookie.startsWith(cookieName + '=')) {
+          // Return the value of the cookie
+          return cookie.substring(cookieName.length + 1);
+        }
+      }
+      // Cookie not found
+      return "";
+    },
   },
   setup(props) {
     const title = ref('');

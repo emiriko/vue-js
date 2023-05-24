@@ -34,13 +34,13 @@ const router = createRouter({
       path: '/catalog/create',
       name: 'create',
       component: CreateSeriesViewVue,
-      // meta: { requiresRoleCheck: true }
+      meta: { requiresRoleCheck: true }
     },
     {
       path: '/catalog/update/:type/:id',
       name: 'update',
       component: UpdateSeriesView,
-      // meta: { requiresRoleCheck: true }
+      meta: { requiresRoleCheck: true }
     },
     {
       path: "/catalog/:id",
