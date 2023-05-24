@@ -10,6 +10,7 @@ import UpdateSeriesView from '@/views/UpdateSeriesView.vue'
 import DetailView from "@/views/DetailView.vue"
 import ProgressViewVue from '@/views/ProgressView.vue'
 import ProgressDetailViewVue from '@/views/ProgressDetailView.vue'
+import ReviewAllView from "@/views/ReviewAllView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,11 @@ const router = createRouter({
       path: "/catalog/:id",
       name: "detail",
       component: DetailView,
+    },
+    {
+      path: "/catalog/review/:id",
+      name: "review",
+      component: ReviewAllView,
     },
     {
       path: "/progress",

@@ -30,13 +30,13 @@ export default defineComponent({
         role: "ADMIN"
       }
 
-      axios.post("http://localhost:8080/api/auth/sign-up", payload)
+      axios.post("http://34.124.246.185/api/auth/sign-up", payload)
       .then((res) => {
         this.showSuccessToast(res.data.message)
       })
       .catch((error) => {
-        console.log("error", error)
-        this.showErrorToast(error.message);
+        console.log(error)
+        this.showErrorToast(error.response.data.message);
       })
     }
   },

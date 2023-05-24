@@ -1,5 +1,5 @@
 <script lang="ts"> 
-import { defineComponent, computed } from 'vue';
+import { defineComponent } from 'vue';
 import { RouterLink } from 'vue-router';
 import { Bars3Icon } from '@heroicons/vue/24/solid'
 import { useMenu } from '@/stores';
@@ -35,11 +35,6 @@ export default defineComponent({
             },
         ] as Menu[]
   }),
-  methods: {
-    handleOpenHamburger(){
-        
-    }
-  },
   setup: () => {
     const menu = useMenu()
     return {
@@ -60,6 +55,6 @@ export default defineComponent({
                 </router-link>
             </li>
         </ul>
-        <Bars3Icon class="h-6 w-6 text-white lg:hidden flex cursor-pointer m-0" type = "button" @click="menu.toggleHamburger()"/> 
+        <Bars3Icon class="h-6 w-6 text-white lg:hidden flex cursor-pointer m-0" @click="menu.toggleHamburger()"/>
     </nav>
 </template>

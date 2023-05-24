@@ -268,13 +268,13 @@ axios.get(`${baseProgressUrl}/${seriesId}`, {
          
           
         </div>
-        <ReviewCard review="my review" username="my-username"></ReviewCard>
+        <!-- <ReviewCard review="my review" username="my-username"></ReviewCard> -->
       </div>
     </div>
     <div class="flex flex-col gap-10 mt-20 min-w-full max-w-[640px]">
       <div class="text-white lg:text-4xl text-2xl font-bold lg:text-left">Other Reviews</div>
       <!-- review card untuk setiap review -->
-      <ReviewCard review="hashdhshdhs" username="useued"></ReviewCard>
+      <!-- <ReviewCard review="hashdhshdhs" username="useued"></ReviewCard> -->
       <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
     </div>
   </div>
