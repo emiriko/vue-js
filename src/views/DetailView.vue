@@ -5,7 +5,7 @@ import VoteButton from "@/components/common/VoteButton.vue";
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
-
+import Cookies from 'js-cookie';
 
 interface Series {
   title: string;
@@ -240,18 +240,6 @@ export default defineComponent({
             this.showErrorToast(error.response.data.message);
           })
 
-    }, getCookieValue(cookieName: String) {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Check if the cookie starts with the specified name
-        if (cookie.startsWith(cookieName + '=')) {
-          // Return the value of the cookie
-          return cookie.substring(cookieName.length + 1);
-        }
-      }
-      // Cookie not found
-      return "";
     }
   },
   setup() {
@@ -264,8 +252,8 @@ export default defineComponent({
     };
 
     const splittedURL = window.location.pathname.split('/');
-    const baseReviewUrl = "http://localhost:8081/api/review";
-    const baseVoteUrl = "http://localhost:8081/api/vote";
+    const baseReviewUrl = "http://34.143.188.191/api/review";
+    const baseVoteUrl = "http://34.143.188.191/api/vote";
     const seriesId = splittedURL[splittedURL.length - 1];
     const baseCatalogUrl = "http://localhost:8080/api/catalog";
 
@@ -301,12 +289,11 @@ export default defineComponent({
   },
 
   mounted() {
-    // document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWlsYSIsImlhdCI6MTY4NDgzMjM2OCwiZXhwIjoxNjg0ODMzODA4fQ.l8cmZZ-jefKQ0QuC6i8ycqq9rS3_AJcPRPchLchfffA; path=/;';
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
 
-    this.token = this.getCookieValue("token");
+    this.token = Cookies.get('token');
     console.log(this.token);
 
     axios

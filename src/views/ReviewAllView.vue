@@ -2,7 +2,7 @@
 import { defineComponent} from 'vue';
 import axios from 'axios';
 import ReviewCard from "@/components/common/ReviewCard.vue";
-
+import Cookies from 'js-cookie';
 
 interface Review {
   id: number;
@@ -21,23 +21,8 @@ export default defineComponent ({
   components: {
     ReviewCard
   },
-  methods: {
-    getCookieValue(cookieName: String) {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Check if the cookie starts with the specified name
-        if (cookie.startsWith(cookieName + '=')) {
-          // Return the value of the cookie
-          return cookie.substring(cookieName.length + 1);
-        }
-      }
-      // Cookie not found
-      return "";
-    }
-  },
   setup() {
-    const baseReviewUrl = "http://localhost:8081/api/review";
+    const baseReviewUrl = "http://34.143.188.191/api/review";
     const splittedURL = window.location.pathname.split('/');
     const seriesId = splittedURL[splittedURL.length - 1];
 
@@ -57,14 +42,11 @@ export default defineComponent ({
   },
 
   mounted() {
-    // document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWlsYSIsImlhdCI6MTY4NDgzMjM2OCwiZXhwIjoxNjg0ODMzODA4fQ.l8cmZZ-jefKQ0QuC6i8ycqq9rS3_AJcPRPchLchfffA; path=/;';
-
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
 
-    this.token = this.getCookieValue("token");
-    console.log(this.token);
+    this.token = Cookies.get('token');
 
     // 1. Get Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
