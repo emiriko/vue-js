@@ -479,7 +479,7 @@ export default defineComponent({
                 <form :onSubmit="createProgress">
                   <h5 class = "capitalize text-3xl font-bold text-white w-full"> Create Progress </h5>
                   
-                  <div>Season or Volume: 
+                  <div v-if="data['type'] != `FILM`">Season or Volume: 
                     <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="seasonsOrVolume" required>
                       <option v-for="season in data['seasons']" :value="season">{{season}}</option>
                     </select>
@@ -487,7 +487,7 @@ export default defineComponent({
                       <option v-for="volume in data['volumes']" :value="volume">{{volume}}</option>
                     </select>
                   </div>
-                  <div> Episode or Chapter: 
+                  <div v-if="data['type'] != `FILM`"> Episode or Chapter: 
                     <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="episodeOrChapter" required>
                       <option v-for="episode in data['episodes']" :value="episode">{{episode}}</option>
                     </select>
