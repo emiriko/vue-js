@@ -1,14 +1,61 @@
 <script lang="ts">
 import Button from '@/components/common/Button.vue';
 import { UserCircleIcon } from '@heroicons/vue/24/outline';
-import { defineComponent } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
+import axios from 'axios';
+import { EnvelopeIcon, IdentificationIcon, UserIcon } from '@heroicons/vue/24/solid';
+import InputField from '@/components/common/InputField.vue';
+import {useToast} from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
 
 export default defineComponent({
   name: 'Login',
   components: {
     "v-button": Button,
-    UserCircleIcon
-},
+    UserCircleIcon,
+    UserIcon,
+    EnvelopeIcon,
+    IdentificationIcon,
+    InputField,
+  },
+  methods: {
+    openModal() {
+        this.showModal = true;
+    },
+    closeModal() {
+        this.showModal = false;
+        this.name = '';
+    },
+    edit(e: Event) {
+
+    }
+  },
+  data() {
+    return {
+      showModal: false
+    };
+  },
+  setup() {
+    const name = ref("")
+    const email = ref("")
+    const username = ref("")
+    const toast = useToast();
+
+    const showSuccessToast = (message: string) => {
+      toast.success(message);
+    };
+
+    onMounted(() => {
+      
+    });
+
+    return {
+        name,
+        email,
+        username,
+        showSuccessToast,
+    }
+  }
 })
 </script>
 
@@ -32,7 +79,32 @@ export default defineComponent({
                         <p class = "font-bold text-violet"> John Doe</p>
                     </div>
                 </div>
-                <v-button type = "indigo" className = "max-w-full"> Edit Profile </v-button>
+                <button className = "max-w-full px-8 py-2 text-center rounded-xl font-bold bg-indigo text-white" @click="openModal"> Edit Profile </button>
+            </div>
+        </div>
+        <div v-show="showModal" class="fixed z-10 inset-0 overflow-y-auto bg-opacity-60">
+            <div class="flex items-center justify-center min-h-screen">
+                <div class="w-1/2 px-6 py-4 bg-grey rounded- flex flex-col gap-y-8 text-white font-bold">
+                <h2 class="text-xl mb-4">Edit Profile</h2>
+                <form class = "flex flex-col max-w-5xl w-full mx-0 gap-y-8 items-center" action = "/" :onSubmit="edit">
+
+                    <InputField type="text" placeholder="Name" v-on:update:inp="name = $event" v-bind:inp="name"> 
+                        <IdentificationIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+                    </InputField>
+                    <InputField type="text" placeholder="Username" v-on:update:inp="username = $event" v-bind:inp="username"> 
+                        <UserIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+                    </InputField>
+                    <InputField type="email" placeholder="Email" v-on:update:inp="email = $event" v-bind:inp="email"> 
+                        <EnvelopeIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+                    </InputField>
+                    <v-button type="indigo" className = "text-center flex justify-center w-fit"> Edit </v-button>
+                </form>
+                <div class="mt-4">
+                    <button @click="closeModal" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Close Modal
+                </button>
+                </div>
+                </div>
             </div>
         </div>
      </div>
