@@ -77,7 +77,7 @@ export default defineComponent({
       }
 
       if (this.method === "POST") {
-        await axios.post(`${baseCatalogUrl}/update_book/create_book`, payload, 
+        await axios.post(`${baseCatalogUrl}/create_book`, payload, 
         {
           headers: {
             "Content-Type": "application/json",

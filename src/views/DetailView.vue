@@ -7,6 +7,7 @@ import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
+
 interface Series {
   title: string;
   id: number;
@@ -35,6 +36,10 @@ interface Review {
   username: string;
   reviewContent: string;
   seriesId: number;
+  upvote: number;
+  downvote: number;
+  isUpvote: boolean;
+  isVoted: boolean;
 }
 
 interface Vote {
@@ -49,11 +54,34 @@ export default defineComponent({
     VoteButton,
     ReviewCard,
     PencilIcon,
-    TrashIcon
-
-  }, methods: {
+    TrashIcon,
+  }, 
+  methods: {
     voteClick(type: string) {
-      if (type === "upvote" && !this.myVote.isUpvote) {
+      if (Object.keys(this.myVote).length === 0) {
+        let isUpvote = true;
+        if (type === "upvote") {
+          this.upvoteCount++;
+        } else {
+          this.downvoteCount++;
+          isUpvote = false;
+        }
+        axios.post(`${this.baseVoteUrl}/vote`, {
+          username: this.myUsername,
+          isUpvote: `${isUpvote}`,
+          seriesId: this.seriesId
+        })
+            .then((res) => {
+              this.myVote = res.data;
+            })
+            .catch((error) => {
+              console.log("error", error)
+              this.showErrorToast(error.message);
+              this.myVote = {} as Vote;
+            })
+        return;
+      }
+      else if (type === "upvote" && !this.myVote.isUpvote) {
         this.myVote.isUpvote=true;
         this.upvoteCount++;
         this.downvoteCount--;
@@ -62,7 +90,7 @@ export default defineComponent({
         this.upvoteCount--;
         this.downvoteCount++;
       } else {
-        return
+        return;
       }
       axios.put(`${this.baseVoteUrl}/update/series_id/${this.seriesId}`, {
         username: this.myUsername
@@ -127,36 +155,90 @@ export default defineComponent({
             .catch((error) => {
               console.log("error", error)
               this.showErrorToast(error.message);
+              this.myReview = {} as Review;
             })
+      } else {
+        this.myReview = {} as Review;
       }
     },
     openDialogEditReview() {
       this.isEditReview = true;
     },
-    closeDialogEditReview(userChoice: boolean) {
+    closeDialogEditReview() {
       this.isEditReview = false;
-      if (userChoice) {
-        axios.put(`${this.baseReviewUrl}/update/${this.myReview.id}`, {
-          username: this.myUsername,
-          reviewContent: this.myReview.reviewContent,
-          seriesId: this.seriesId
-        })
-            .then((res) => {
-              this.showSuccessToast("Berhasil mengedit review");
-              this.myReview = res.data;
-            })
-            .catch((error) => {
-              console.log("error", error)
-              this.showErrorToast(error.message);
-            })
+      axios.put(`${this.baseReviewUrl}/update/${this.myReview.id}`, {
+        username: this.myUsername,
+        reviewContent: this.myReview.reviewContent,
+        seriesId: this.seriesId
+      })
+          .then((res) => {
+            this.showSuccessToast("Berhasil mengedit review");
+            this.myReview = res.data;
+          })
+          .catch((error) => {
+            console.log("error", error)
+            this.showErrorToast(error.message);
+          })
+    },
+    handleVoteChange(type: string, reviewId: number) {
+      // Update the state based on the type and review ID received
+      const review: Review | undefined = this.reviews.find(item => item.id === reviewId);
+      const foundReview: Review = review ?? {} as Review;
+      let isVoted = true;
+
+      if (type === "upvote") {
+        if (foundReview.isUpvote) {
+          foundReview.isUpvote = false;
+          foundReview.isVoted = false;
+          foundReview.upvote--;
+        } else if (foundReview.isVoted){
+          foundReview.isUpvote = true;
+          foundReview.upvote++;
+          foundReview.downvote--;
+        } else {
+          foundReview.isUpvote = true;
+          foundReview.isVoted = true;
+          foundReview.upvote++;
+          isVoted = false;
+        }
+      } else {
+        if (foundReview.isUpvote){
+          foundReview.isUpvote = false;
+          foundReview.upvote--;
+          foundReview.downvote++;
+        }
+        else if (foundReview.isVoted) {
+          foundReview.isVoted = false;
+          foundReview.downvote--;
+          isVoted = true;
+        }
+        else {
+          foundReview.isUpvote = false;
+          foundReview.isVoted = true;
+          foundReview.downvote++;
+          isVoted = false;
+        }
       }
+      axios.post(`${this.baseReviewUrl}/${type}-review/`, {
+        username: this.myUsername,
+        isVoted: `${isVoted}`,
+        reviewId: reviewId
+      })
+          .then(() => {
+            this.showSuccessToast(`Berhasil ${type} review`);
+          })
+          .catch((error) => {
+            console.log("error", error)
+            this.showErrorToast(error.message);
+          })
+
     }
   },
   setup() {
     const upvoteCount  = ref(0);
     const downvoteCount  = ref(0);
     const toast = useToast();
-    const myUsername = "naila";
+    const myUsername = "hani";
 
     const showSuccessToast = (message: string) => {
       toast.success(message);
@@ -227,6 +309,9 @@ export default defineComponent({
 
     // 1. Get Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
+      params: {
+        username: this.myUsername
+      },
     })
         .then((response) => {
           console.log(response.data);
@@ -243,8 +328,8 @@ export default defineComponent({
     // 2. Get my Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}/me`, {
       params: {
-        username: 'naila'
-        },
+        username: this.myUsername
+       },
       })
         .then((response) => {
           console.log(response.data);
@@ -269,7 +354,7 @@ export default defineComponent({
     // 4. Get My Vote by Series ID
     axios.get(`${this.baseVoteUrl}/series_id/${this.seriesId}/me`, {
       params: {
-        username: 'naila'
+        username: this.myUsername
       },
       })
         .then((response) => {
@@ -398,15 +483,24 @@ export default defineComponent({
               <h2 class="text-white text-2xl font-bold m-4">Edit Your Review</h2>
               <textarea id="reviewContent" cols="40" rows="5" required v-model="myReview.reviewContent" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" placeholder="Your review goes here..."></textarea>
               <div class="flex justify-end mt-4 gap-4">
-                <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="closeDialogEditReview(false)">Cancel</button>
-                <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2 text-white" @click="closeDialogEditReview(true)">Edit</button>
+                <button class="bg-purple-600 hover:bg-purple-800 rounded px-4 py-2 mr-2 text-white" @click="closeDialogEditReview()">Edit</button>
               </div>
             </div>
           </div>
          
           
         </div>
-        <ReviewCard v-if="Object.keys(myReview).length !== 0" :review=myReview.reviewContent :username=myUsername></ReviewCard>
+        <ReviewCard v-if="Object.keys(myReview).length !== 0"
+                    :review=myReview.reviewContent
+                    :username=myUsername
+                    :my-username="myUsername"
+                    :is-upvote="myReview.isUpvote"
+                    :is-voted="myReview.isVoted"
+                    :upvote="myReview.upvote"
+                    :downvote="myReview.downvote"
+                    :id="myReview.id"
+                    @state-change="handleVoteChange"
+        ></ReviewCard>
         <div v-if="Object.keys(myReview).length === 0" class="text-justify">
           You haven't left a review yet.
           <button @click="openDialogPostReview" class="text-indigo font-bold">
@@ -420,7 +514,18 @@ export default defineComponent({
       <!-- review card untuk setiap review -->
       <div v-if="isDataLoaded">
         <div v-for="review in reviews.slice(0, 3)" :key="review.id">
-          <ReviewCard :review=review.reviewContent :username=review.username></ReviewCard>
+          <ReviewCard :review=review.reviewContent
+                      :username=review.username
+                      :my-username="myUsername"
+                      :is-upvote=review.isUpvote
+                      :is-voted="review.isVoted"
+                      :upvote="review.upvote"
+                      :downvote="review.downvote"
+                      :id="review.id"
+                      @state-change="handleVoteChange"
+                      class="mb-6"
+                      >
+          </ReviewCard>
         </div>
       </div>
       <div v-if="reviews.length > 3">
