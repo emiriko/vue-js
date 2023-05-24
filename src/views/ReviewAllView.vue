@@ -46,7 +46,7 @@ export default defineComponent ({
       this.isDataLoaded = true;
     }, 2000);
 
-    this.token = Cookies.get('token');
+    this.token = Cookies.get('token') || "";
 
     // 1. Get Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {

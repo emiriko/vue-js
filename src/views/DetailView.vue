@@ -293,7 +293,7 @@ export default defineComponent({
       this.isDataLoaded = true;
     }, 2000);
 
-    this.token = Cookies.get('token');
+    this.token = Cookies.get('token') || "";
     console.log(this.token);
 
     axios
