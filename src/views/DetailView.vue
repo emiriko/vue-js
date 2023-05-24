@@ -5,7 +5,7 @@ import VoteButton from "@/components/common/VoteButton.vue";
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
-
+import Cookies from 'js-cookie';
 
 interface Series {
   title: string;
@@ -119,6 +119,7 @@ export default defineComponent({
       this.isOpenDeleteReview = true;
     },
     closeDialogDeleteReview(userChoice: boolean) {
+      let myUsername = this.myReview.username;
       this.isOpenDeleteReview = false;
       if (userChoice) {
         axios.delete(`${this.baseReviewUrl}/delete/${this.myReview.id}`, {
@@ -190,12 +191,15 @@ export default defineComponent({
       const review: Review | undefined = this.reviews.find(item => item.id === reviewId);
       const foundReview: Review = review ?? {} as Review;
       let isVoted = true;
+      let message = "";
 
       if (type === "upvote") {
+        message = "Berhasil upvote review";
         if (foundReview.isUpvote) {
           foundReview.isUpvote = false;
           foundReview.isVoted = false;
           foundReview.upvote--;
+          message = "Berhasil membatalkan vote";
         } else if (foundReview.isVoted){
           foundReview.isUpvote = true;
           foundReview.upvote++;
@@ -207,6 +211,7 @@ export default defineComponent({
           isVoted = false;
         }
       } else {
+        message = "Berhasil downvote review";
         if (foundReview.isUpvote){
           foundReview.isUpvote = false;
           foundReview.upvote--;
@@ -216,6 +221,7 @@ export default defineComponent({
           foundReview.isVoted = false;
           foundReview.downvote--;
           isVoted = true;
+          message = "Berhasil membatalkan vote";
         }
         else {
           foundReview.isUpvote = false;
@@ -233,34 +239,22 @@ export default defineComponent({
         }
       })
           .then(() => {
-            this.showSuccessToast(`Berhasil ${type} review`);
+            this.showSuccessToast(message);
           })
           .catch((error) => {
             console.log("error", error.response.data.message)
             this.showErrorToast(error.response.data.message);
           })
 
-    }, getCookieValue(cookieName: String) {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Check if the cookie starts with the specified name
-        if (cookie.startsWith(cookieName + '=')) {
-          // Return the value of the cookie
-          return cookie.substring(cookieName.length + 1);
-        }
-      }
-      // Cookie not found
-      return "";
       },
     createProgress(e: Event) {
       this.create = false;
       e.preventDefault()
       
       const body = {
-        episodeOrChapter: this.episodeOrChapter,
-        seasonsOrVolume: this.seasonsOrVolume,
         status: this.status,
+        episodeOrChapter: this.episodeOrChapter,
+        seasonOrVolume: this.seasonOrVolume,
       }
       axios.post(`${this.baseProgressUrl}/create/${this.seriesId}`, body,
       { headers: {
@@ -269,7 +263,7 @@ export default defineComponent({
     })
       .then((res) => {
           this.showSuccessToast("Succesfully added to progress")
-          this.$router.push('/catalog/');
+          this.progressNotExist=false
       })
       .catch((error) => {
           console.log("error", error)
@@ -282,7 +276,7 @@ export default defineComponent({
     const upvoteCount  = ref(0);
     const downvoteCount  = ref(0);
     var episodeOrChapter = ref(0);
-    var seasonsOrVolume = ref(0);
+    var seasonOrVolume = ref(0);
     var status = ref('');
     const isUpvote = ref(false);
     const isVoted  = ref(false);
@@ -308,7 +302,7 @@ export default defineComponent({
       showSuccessToast,
       showErrorToast,
       episodeOrChapter,
-      seasonsOrVolume,
+      seasonOrVolume,
       status,
       baseReviewUrl,
       baseVoteUrl,
@@ -335,39 +329,26 @@ export default defineComponent({
       isOpenDeleteReview: false,
       isOpenPostReview: false,
       isEditReview: false,
-      token: ""
+      token: "",
+      myUsername: ""
     }
   },
 
   mounted() {
-    // document.cookie = 'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWlsYSIsImlhdCI6MTY4NDgzMjM2OCwiZXhwIjoxNjg0ODMzODA4fQ.l8cmZZ-jefKQ0QuC6i8ycqq9rS3_AJcPRPchLchfffA; path=/;';
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
 
-    this.token = this.getCookieValue("token");
+    this.token = Cookies.get('token') || "";
     console.log(this.token);
 
     axios
         .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
         .then(response => (this.data = response.data))
 
-    // 1. Get Review by Series ID
-    axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
-      headers: {
-        Authorization: `Bearer ${this.token}`
-      }
-    })
-        .then((response) => {
-          console.log(response.data);
-          this.reviews = response.data;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
 
 
-    // 2. Get my Review by Series ID
+    // 1. Get my Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}/me`, {
       headers: {
         Authorization: `Bearer ${this.token}`
@@ -376,6 +357,21 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data);
           this.myReview = response.data;
+          this.myUsername = this.myReview.username;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+    // 2. Get Review by Series ID
+    axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
+    })
+        .then((response) => {
+          console.log(response.data);
+          this.reviews = response.data.filter((item: Review) => item.username != this.myUsername);
         })
         .catch((error) => {
           console.log(error);
@@ -480,14 +476,14 @@ export default defineComponent({
                   <h5 class = "capitalize text-3xl font-bold text-white w-full"> Create Progress </h5>
                   
                   <div v-if="data['type'] != `FILM`">Season or Volume: 
-                    <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="seasonsOrVolume" required>
+                    <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="seasonOrVolume" required>
                       <option v-for="season in data['seasons']" :value="season">{{season}}</option>
                     </select>
-                    <select class="bg-grey rounded-lg" v-if="data['type'] === `BOOK`" v-model="seasonsOrVolume" required>
+                    <select class="bg-grey rounded-lg" v-if="data['type'] === `BOOK`" v-model="seasonOrVolume" required>
                       <option v-for="volume in data['volumes']" :value="volume">{{volume}}</option>
                     </select>
                   </div>
-                  <div v-if="data['type'] != `FILM`"> Episode or Chapter: 
+                  <div v-if="data['type'] != `FILM`">Episode or Chapter: 
                     <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="episodeOrChapter" required>
                       <option v-for="episode in data['episodes']" :value="episode">{{episode}}</option>
                     </select>
@@ -505,7 +501,7 @@ export default defineComponent({
                   </div>
                   <div class="flex justify-end mt-4">
                     <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="create=false">Cancel</button>
-                    <button type="submit" class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="createProgress">Add</button>
+                    <button type="submit" class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2">Add</button>
                   </div>
                 </form>
               </div>
@@ -610,8 +606,7 @@ export default defineComponent({
       <!-- review card untuk setiap review -->
       <div v-if="isDataLoaded">
         <div v-for="review in reviews.slice(0, 3)" :key="review.id">
-          <ReviewCard v-if="review.username !== myReview.username"
-                      :review=review.reviewContent
+          <ReviewCard :review=review.reviewContent
                       :username=review.username
                       :my-username=myReview.username
                       :is-upvote=review.isUpvote
@@ -630,7 +625,7 @@ export default defineComponent({
           <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
         </router-link>
       </div>
-      <div v-if="reviews.length === 0 || (reviews.length === 1 && reviews[0].username === myReview.username)">
+      <div v-if="reviews.length === 0">
         <p>There's no other reviews yet</p>
       </div>
     </div>
