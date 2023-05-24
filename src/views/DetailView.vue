@@ -282,7 +282,7 @@ export default defineComponent({
     const baseVoteUrl = "http://localhost:8081/api/vote";
     const seriesId = splittedURL[splittedURL.length - 1];
     const baseAuthUrl = "http://34.124.246.185/api/auth";
-    const baseCatalogUrl = "http://localhost:8080/api/catalog";
+    const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 
     const showErrorToast = (message: string) => {
       toast.error(message);

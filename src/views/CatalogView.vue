@@ -21,7 +21,7 @@ interface User {
   email: string;
 }
 
-const baseCatalogUrl = "http://localhost:8080/api/catalog";
+const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 
 const baseAuthUrl = "http://34.124.246.185/api/auth";
 

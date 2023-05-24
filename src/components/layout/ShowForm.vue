@@ -9,7 +9,7 @@ import {Multiselect} from 'vue-multiselect';
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
-const baseCatalogUrl = "http://localhost:8080/api/catalog";
+const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 
 
 
