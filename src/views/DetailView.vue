@@ -2,6 +2,7 @@
 import {defineComponent, ref} from "vue";
 import ReviewCard from "@/components/common/ReviewCard.vue";
 import VoteButton from "@/components/common/VoteButton.vue";
+import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid';
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
@@ -24,6 +25,12 @@ interface Series {
   episodes: number;
 }
 
+interface User {
+  name: string;
+  email: string;
+  role: string;
+  username: string
+}
 interface Review {
   id: number;
   username: string;
@@ -45,8 +52,11 @@ export default defineComponent({
   name: "DetailView",
   components: {
     VoteButton,
-    ReviewCard
-  }, methods: {
+    ReviewCard,
+    PencilIcon,
+    TrashIcon,
+  }, 
+  methods: {
     voteClick(type: string) {
       if (Object.keys(this.myVote).length === 0) {
         let isUpvote = true;
@@ -104,7 +114,11 @@ export default defineComponent({
       closeDialog(userChoice: boolean) {
         this.isOpen = false;
         if (userChoice) {
-          axios.delete("http://localhost:8082/api/catalog/delete_series/"+this.data.id)
+          axios.delete(`${this.baseCatalogUrl}/delete_series/${this.seriesId}`,{
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        })
         .then((res) => {
             this.showSuccessToast(res.data)
             this.$router.push('/catalog/');
@@ -291,7 +305,8 @@ export default defineComponent({
     const baseVoteUrl = "http://34.143.188.191/api/vote";
     const baseProgressUrl = "http://34.143.188.191/api/progress";
     const seriesId = splittedURL[splittedURL.length - 1];
-    const baseCatalogUrl = "http://localhost:8082/api/catalog";
+    const baseAuthUrl = "http://34.124.246.185/api/auth";
+    const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 
     const showErrorToast = (message: string) => {
       toast.error(message);
@@ -307,6 +322,7 @@ export default defineComponent({
       baseReviewUrl,
       baseVoteUrl,
       seriesId,
+      baseAuthUrl,
       baseCatalogUrl,
       baseProgressUrl
     };
@@ -317,6 +333,8 @@ export default defineComponent({
     return {
       data: {} as Series,
       isOpen: false,
+      currentUser: {
+      } as User,
       create: false,
       json : {
 
@@ -343,8 +361,22 @@ export default defineComponent({
     console.log(this.token);
 
     axios
+        .get(`${this.baseAuthUrl}/verify`, {
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
+    })
+        .then(response => (this.currentUser = response.data.user))
+        .catch((error) => {
+          console.log(error);
+        });
+
+    axios
         .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
         .then(response => (this.data = response.data))
+        .catch((error) => {
+          console.log(error);
+        });
 
 
 
@@ -429,22 +461,22 @@ export default defineComponent({
         <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
-        <div class="flex justify-end gap-4">
-          <router-link :to="'/catalog/update/'+ data.type +'/' + data.id">
-            <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">Edit</a>
+        <div class="series-title text-white lg:text-4xl text-2xl font-bold lg:text-left">{{ data['title'] }} ({{ data['year'] }})</div>
+        <div class="series-admin flex space-x-4" v-if="currentUser['role'] === 'ADMIN'">
+          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
+            <PencilIcon class="w-8 h-8  text-indigo"></PencilIcon>
           </router-link>
-          <button @click="openDialog" class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">
-            Delete
+          <button @click="openDialog">
+            <TrashIcon class="w-8 h-8  text-indigo"></TrashIcon>
           </button>
         </div>
-        <div class="series-title">{{ data.title }} ({{ data.year }})</div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
             <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
-            <label>Creator</label>
+            <label>Creator: </label>
             <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
           </div>
           <div class="set">
