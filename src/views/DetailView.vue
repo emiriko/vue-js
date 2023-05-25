@@ -408,7 +408,7 @@ export default defineComponent({
         <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title">{{ data['title'] }} ({{ data['year'] }})</div>
+        <div class="series-title text-white lg:text-4xl text-2xl font-bold lg:text-left">{{ data['title'] }} ({{ data['year'] }})</div>
         <div class="series-admin flex space-x-4" v-if="currentUser['role'] === 'ADMIN'">
           <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
             <PencilIcon class="w-8 h-8  text-indigo"></PencilIcon>
@@ -423,7 +423,7 @@ export default defineComponent({
             <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
-            <label>Creator</label>
+            <label>Creator: </label>
             <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
           </div>
           <div class="set">

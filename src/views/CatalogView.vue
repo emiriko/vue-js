@@ -35,7 +35,6 @@ export default defineComponent ({
             searchText: "",
             data: [] as Series[],
             currentUser: {
-                "role": "ADMIN"
             } as User,
             token: ""
         };
@@ -103,7 +102,7 @@ export default defineComponent ({
             <router-link :to="{name: 'detail', params: {id: series['id']}}" class="series-link">
                 <div class="series-image">
                     <img v-bind:src="series['imageUrl']" alt="Series Image" class="image"/>
-                    <div class="title">{{ series['title'] }}</div>
+                    <div class="title">{{ series['title'] }} ({{ series['year'] }})</div>
                 </div>
             </router-link>
         </div>

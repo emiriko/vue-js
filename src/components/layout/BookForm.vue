@@ -4,7 +4,7 @@
 
 import { defineComponent, ref, onMounted } from 'vue';
 import Button from '@/components/common/Button.vue';
-import { EnvelopeIcon, IdentificationIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/solid';
+import { PhotoIcon, BookOpenIcon, UserCircleIcon, DocumentTextIcon } from '@heroicons/vue/24/solid';
 import InputField from '@/components/common/InputField.vue';
 import axios from 'axios';
 import {Multiselect} from 'vue-multiselect';
@@ -18,10 +18,10 @@ const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 export default defineComponent({
   name: 'Film Form',
   components: {
-    LockClosedIcon,
-    UserIcon,
-    EnvelopeIcon,
-    IdentificationIcon,
+    UserCircleIcon,
+    DocumentTextIcon,
+    PhotoIcon,
+    BookOpenIcon,
     "v-button": Button,
     InputField,
     Multiselect,
@@ -49,7 +49,6 @@ export default defineComponent({
   },
   mounted() {
         this.token = this.getCookieValue("token");
-        console.log(this.token);
     
   },
   props: {
@@ -75,7 +74,7 @@ export default defineComponent({
         title: this.title,
         description: this.description,
         imageUrl: this.imageUrl,
-        producer: this.producer,
+        author: this.author,
         genres: this.value,
         volumes: this.volumes,
         chapters: this.chapters,
@@ -135,7 +134,7 @@ export default defineComponent({
     var title = ref('');
     var description = ref('');
     var imageUrl = ref('');
-    var producer = ref('');
+    var author = ref('');
     var genres:string[] = [];
     var year = ref(0);
     var volumes = ref(0);
@@ -148,7 +147,7 @@ export default defineComponent({
             title.value = response.data.title;
             description.value = response.data.description;
             imageUrl.value = response.data.imageUrl;
-            producer.value = response.data.producer;
+            author.value = response.data.author;
             genres.values = response.data.genres;
             year.value = response.data.year;
             volumes.value = response.data.volumes;
@@ -178,7 +177,7 @@ export default defineComponent({
       description,
       imageUrl,
       genres,
-      producer,
+      author,
       year,
       volumes,
       chapters,
@@ -202,14 +201,14 @@ export default defineComponent({
     <div class = "flex py-14 mx-0 justify-center">
         <form class = "flex flex-col max-w-5xl w-full mx-0 gap-y-8 items-center" action = "/" :onSubmit="create">
             <InputField type="text" placeholder="Title" v-on:update:inp="title = $event" v-bind:inp="title"> 
-              <IdentificationIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+              <BookOpenIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
             <div class="flex items-center gap-x-4 w-full mx-0 relative">
                 <label class="typo__label">Year</label>
                 <input type="number" placeholder="Year" v-model="year" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> 
             </div>
-            <InputField type="text" placeholder="Producer" v-on:update:inp="producer = $event" v-bind:inp="producer"> 
-              <LockClosedIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+            <InputField type="text" placeholder="Author" v-on:update:inp="author = $event" v-bind:inp="author"> 
+              <UserCircleIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
             <div class="flex items-center gap-x-4 w-full mx-0 relative">
                 <label class="typo__label">Number of Volumes</label>
@@ -220,11 +219,13 @@ export default defineComponent({
                 <input type="number" placeholder="Number of Chapters" v-model="chapters" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> 
             </div>
             <InputField type="url" placeholder="Url for Cover Image" v-on:update:inp="imageUrl = $event" v-bind:inp="imageUrl"> 
-              <EnvelopeIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+              <PhotoIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
 
             <div class="flex items-center gap-x-4 w-full mx-0 relative">
-                <textarea type="text" placeholder="Description" v-model="description" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> </textarea>
+              <textarea type="text" placeholder="Description" v-model="description" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> </textarea>
+              <DocumentTextIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none"/>
+
             </div>
 
             
