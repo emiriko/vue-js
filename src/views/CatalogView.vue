@@ -14,6 +14,18 @@ interface Series {
   type: string;
 }
 
+interface User {
+  role: string;
+  username: string;
+  name: string;
+  email: string;
+}
+
+const baseCatalogUrl = "http://34.87.103.104/api/catalog";
+
+const baseAuthUrl = "http://34.124.246.185/api/auth";
+
+
 export default defineComponent ({
     name: "Catalog",
     components: {},
@@ -21,27 +33,54 @@ export default defineComponent ({
     data() {
         return {
             searchText: "",
-            data: [] as Series[]
+            data: [] as Series[],
+            currentUser: {
+            } as User,
+            token: ""
         };
     },
 
-    async mounted() {
-    await axios
-        .get('http://localhost:8080/api/catalog/')
-        .then(response => (this.data = response.data))
-
-    },
 
     methods: {
         async searchSeries() {
             this.$router.replace({path: "/catalog/search",query: {keyword: this.searchText.toLowerCase()}});
             
-            await axios.get("http://localhost:8080/api/catalog/search", {params: {keyword: this.searchText}})
+            await axios.get(`${baseCatalogUrl}/search`, {params: {keyword: this.searchText}})
             .then((response) => {
                 this.data = response.data
                 console.log(this.data)
             });
         },
+        getCookieValue(cookieName: String) {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if the cookie starts with the specified name
+                if (cookie.startsWith(cookieName + '=')) {
+                // Return the value of the cookie
+                return cookie.substring(cookieName.length + 1);
+                }
+            }
+            // Cookie not found
+            return "";
+        },
+    },
+    
+    async mounted() {
+        this.token = this.getCookieValue("token");
+        console.log(this.token);
+
+        await axios
+            .get(`${baseCatalogUrl}/`)
+            .then(response => (this.data = response.data))
+        await axios
+            .get(`${baseAuthUrl}/verify`, {
+            headers: {
+                Authorization: `Bearer ${this.token}`
+            }
+            })
+            .then(response => (this.currentUser = response.data.user))
+    
     },
 })
 </script>
@@ -52,7 +91,7 @@ export default defineComponent ({
 
     <div>
         <input type="text" placeholder="Search by Genres, Title, Creator, and id" v-model="searchText" class="px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full"/>
-        <button id="search-button" @click="()=>$router.push('/catalog/create/')" class="px-8 py-2 text-center rounded-xl font-bold">Create</button>
+        <button v-if="currentUser['role'] === 'ADMIN'" id="search-button" @click="()=>$router.push('/catalog/create/')" class="px-8 py-2 text-center rounded-xl font-bold">Create</button>
         
         <button id="search-button" @click="searchSeries" class="px-8 py-2 text-center rounded-xl font-bold">Search</button>
 
@@ -63,7 +102,7 @@ export default defineComponent ({
             <router-link :to="{name: 'detail', params: {id: series['id']}}" class="series-link">
                 <div class="series-image">
                     <img v-bind:src="series['imageUrl']" alt="Series Image" class="image"/>
-                    <div class="title">{{ series['title'] }}</div>
+                    <div class="title">{{ series['title'] }} ({{ series['year'] }})</div>
                 </div>
             </router-link>
         </div>
