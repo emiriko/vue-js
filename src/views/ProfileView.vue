@@ -25,10 +25,38 @@ export default defineComponent({
     },
     closeModal() {
         this.showModal = false;
-        this.name = '';
     },
     edit(e: Event) {
+      e.preventDefault()
+      
+      const payload = {
+        name: this.changeName,
+        email: this.changeEmail,
+        username: this.changeUsername,
+      }
 
+      axios.put("http://34.124.246.185/api/profile", payload, {
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
+      })
+      .then((res) => {
+        this.showSuccessToast(res.data.message)
+        this.showModal = false
+       
+        if(this.changeEmail !== this.email || this.changeUsername !== this.username) {
+          Cookies.remove('token')
+          this.$router.push('/auth/sign-in');
+        } else {
+          this.email = this.changeEmail
+          this.name = this.changeName
+          this.username = this.changeUsername
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+        this.showErrorToast(error.response.data.message);
+      })
     }
   },
   data() {
@@ -40,6 +68,9 @@ export default defineComponent({
     const name = ref("")
     const email = ref("")
     const username = ref("")
+    const changeName = ref("")
+    const changeEmail = ref("")
+    const changeUsername = ref("")
     const toast = useToast();
     const showComponent = ref(false)
     const role = ref("")
@@ -47,6 +78,10 @@ export default defineComponent({
     
     const showSuccessToast = (message: string) => {
       toast.success(message);
+    };
+
+    const showErrorToast = (message: string) => {
+      toast.error(message);
     };
 
     onMounted(() => {
@@ -59,6 +94,9 @@ export default defineComponent({
         name.value = res.data.user.name;
         email.value = res.data.user.email;
         username.value = res.data.user.username;
+        changeName.value = res.data.user.name;
+        changeEmail.value = res.data.user.email;
+        changeUsername.value = res.data.user.username;
         role.value = res.data.user.role;
         showComponent.value = true
       })
@@ -72,7 +110,12 @@ export default defineComponent({
         role,
         email,
         username,
+        token,
+        changeName,
+        changeEmail,
+        changeUsername,
         showSuccessToast,
+        showErrorToast,
         showComponent
     }
   },
@@ -88,7 +131,7 @@ export default defineComponent({
                 <UserCircleIcon class = "w-full border-none max-w-xs"/>
             </div>
             <div class = "flex flex-col lg:w-3/5  justify-center gap-y-8 py-4 max-lg:items-center">
-                <h1 class = "text-white lg:text-5xl md:text-3xl text-xl font-bold lg:text-left text-center"> Hello, username! </h1>
+                <h1 class = "text-white lg:text-5xl md:text-3xl text-xl font-bold lg:text-left text-center"> Hello, {{ name }} </h1>
                 <div class = "mx-0 flex flex-col gap-y-6 lg:text-base md:text-sm text-xs">
                     <div class = "flex mx-0 gap-x-[52px] sm:flex-row flex-col max-sm:items-center">
                         <h2 class = "capitalize"> Email </h2>
@@ -114,15 +157,16 @@ export default defineComponent({
             <div class="flex items-center justify-center min-h-screen">
                 <div class="w-1/2 px-6 py-4 bg-grey rounded- flex flex-col gap-y-8 text-white font-bold">
                 <h2 class="text-xl mb-4">Edit Profile</h2>
+                <p className = "text-red-500"> Warning: Changing your username/email will automatically log you out</p>
                 <form class = "flex flex-col max-w-5xl w-full mx-0 gap-y-8 items-center" action = "/" :onSubmit="edit">
 
-                    <InputField type="text" placeholder="Name" v-on:update:inp="name = $event" v-bind:inp="name"> 
+                    <InputField type="text" placeholder="Name" v-on:update:inp="changeName=$event" v-bind:inp="changeName"> 
                         <IdentificationIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
                     </InputField>
-                    <InputField type="text" placeholder="Username" v-on:update:inp="username = $event" v-bind:inp="username"> 
+                    <InputField type="text" placeholder="Username" v-on:update:inp="changeUsername = $event" v-bind:inp="changeUsername"> 
                         <UserIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
                     </InputField>
-                    <InputField type="email" placeholder="Email" v-on:update:inp="email = $event" v-bind:inp="email"> 
+                    <InputField type="email" placeholder="Email" v-on:update:inp="changeEmail = $event" v-bind:inp="changeEmail"> 
                         <EnvelopeIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
                     </InputField>
                     <v-button type="indigo" className = "text-center flex justify-center w-fit"> Edit </v-button>
