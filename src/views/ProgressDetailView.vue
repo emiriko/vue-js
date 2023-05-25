@@ -296,7 +296,7 @@ export default defineComponent({
     const baseVoteUrl = "http://34.143.188.191/api/vote";
     const baseProgressUrl = "http://34.143.188.191/api/progress";
     const seriesId = splittedURL[splittedURL.length - 1];
-    const baseCatalogUrl = "http://localhost:8082/api/catalog";
+    const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 
     const showErrorToast = (message: string) => {
       toast.error(message);

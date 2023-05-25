@@ -361,9 +361,6 @@ export default defineComponent({
       currentUser: {
       } as User,
       create: false,
-      json : {
-
-      },
       progressNotExist: false,
       reviews: [] as Review[],
       myReview: {} as Review,
