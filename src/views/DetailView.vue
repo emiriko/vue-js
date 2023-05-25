@@ -58,7 +58,13 @@ export default defineComponent({
   }, 
   methods: {
     voteClick(type: string) {
+      if (this.token == "") {
+        this.showErrorToast("Please sign in first");
+        return;
+      }
       if (Object.keys(this.myVote).length === 0) {
+        let upvoteTemp = this.upvoteCount;
+        let downvoteTemp = this.downvoteCount;
         let isUpvote = true;
         if (type === "upvote") {
           this.upvoteCount++;
@@ -81,6 +87,8 @@ export default defineComponent({
               console.log("error", error.response.data.message)
               this.showErrorToast(error.response.data.message);
               this.myVote = {} as Vote;
+              this.upvoteCount = upvoteTemp;
+              this.downvoteCount = downvoteTemp;
             })
         return;
       }
@@ -99,7 +107,11 @@ export default defineComponent({
         headers: {
           Authorization: `Bearer ${this.token}`
         }
-      });
+      })
+          .catch((error) => {
+            console.log("error", error.response.data.message)
+            this.showErrorToast(error.response.data.message);
+          });
     },
     capitalized(str: string) {
       const allLowerCase = str.toLowerCase();
@@ -157,6 +169,11 @@ export default defineComponent({
     closeDialogPostReview(userChoice: boolean) {
       this.isOpenPostReview = false;
       if (userChoice) {
+        if (this.token == "") {
+          this.showErrorToast("Please sign in first");
+          this.myReview = {} as Review;
+          return;
+        }
         axios.post(`${this.baseReviewUrl}/create`, {
           reviewContent: this.myReview.reviewContent,
           seriesId: this.seriesId
@@ -201,11 +218,17 @@ export default defineComponent({
           })
     },
     handleVoteChange(type: string, reviewId: number) {
+      if (this.token == "") {
+        this.showErrorToast("Please sign in first");
+        return;
+      }
       // Update the state based on the type and review ID received
       const review: Review | undefined = this.reviews.find(item => item.id === reviewId);
       const foundReview: Review = review ?? {} as Review;
       let isVoted = true;
       let message = "";
+      let upvoteTemp = foundReview.upvote;
+      let downvoteTemp = foundReview.downvote;
 
       if (type === "upvote") {
         message = "Berhasil upvote review";
@@ -258,6 +281,8 @@ export default defineComponent({
           .catch((error) => {
             console.log("error", error.response.data.message)
             this.showErrorToast(error.response.data.message);
+            foundReview.upvote = upvoteTemp;
+            foundReview.downvote = downvoteTemp;
           })
 
       },
@@ -347,8 +372,7 @@ export default defineComponent({
       isOpenDeleteReview: false,
       isOpenPostReview: false,
       isEditReview: false,
-      token: "",
-      myUsername: ""
+      token: ""
     }
   },
 
@@ -389,7 +413,6 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data);
           this.myReview = response.data;
-          this.myUsername = this.myReview.username;
         })
         .catch((error) => {
           console.log(error);
@@ -403,7 +426,7 @@ export default defineComponent({
     })
         .then((response) => {
           console.log(response.data);
-          this.reviews = response.data.filter((item: Review) => item.username != this.myUsername);
+          this.reviews = response.data.filter((item: Review) => item.username != this.currentUser.username);
         })
         .catch((error) => {
           console.log(error);
@@ -640,12 +663,13 @@ export default defineComponent({
         <div v-for="review in reviews.slice(0, 3)" :key="review.id">
           <ReviewCard :review=review.reviewContent
                       :username=review.username
-                      :my-username=myReview.username
+                      :my-username=this.currentUser.username
                       :is-upvote=review.isUpvote
                       :is-voted="review.isVoted"
                       :upvote="review.upvote"
                       :downvote="review.downvote"
                       :id="review.id"
+                      v-if="review.username != this.currentUser.username"
                       @state-change="handleVoteChange"
                       class="mb-6"
                       >
@@ -657,7 +681,10 @@ export default defineComponent({
           <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
         </router-link>
       </div>
-      <div v-if="reviews.length === 0">
+      <div v-if="this.token === ''">
+        <p>Please sign in to see reviews</p>
+      </div>
+      <div v-if="reviews.length === 0 && this.token !== ''">
         <p>There's no other reviews yet</p>
       </div>
     </div>
