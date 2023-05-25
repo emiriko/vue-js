@@ -2,7 +2,6 @@
 import {defineComponent, ref} from "vue";
 import ReviewCard from "@/components/common/ReviewCard.vue";
 import VoteButton from "@/components/common/VoteButton.vue";
-import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid';
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
@@ -25,12 +24,6 @@ interface Series {
   episodes: number;
 }
 
-interface User {
-  name: string;
-  email: string;
-  role: string;
-  username: string
-}
 interface Review {
   id: number;
   username: string;
@@ -48,15 +41,19 @@ interface Vote {
   seriesId: number;
 }
 
+interface Progress {
+  seriesId: number;
+  episodeOrChapter: number;
+  seasonOrVolume: number;
+  status: string;
+}
+
 export default defineComponent({
-  name: "DetailView",
+  name: "ProgressDetailView",
   components: {
     VoteButton,
-    ReviewCard,
-    PencilIcon,
-    TrashIcon,
-  }, 
-  methods: {
+    ReviewCard
+  }, methods: {
     voteClick(type: string) {
       if (Object.keys(this.myVote).length === 0) {
         let isUpvote = true;
@@ -108,27 +105,6 @@ export default defineComponent({
 
       return capitalizedFirst+rest;
     },
-    openDialog() {
-        this.isOpen = true;
-      },
-      closeDialog(userChoice: boolean) {
-        this.isOpen = false;
-        if (userChoice) {
-          axios.delete(`${this.baseCatalogUrl}/delete_series/${this.seriesId}`,{
-          headers: {
-            Authorization: `Bearer ${this.token}`
-          }
-        })
-        .then((res) => {
-            this.showSuccessToast(res.data)
-            this.$router.push('/catalog/');
-        })
-        .catch((error) => {
-            console.log("error", error.response.data.message)
-            this.showErrorToast(error.response.data.message);
-        })
-        }
-      },
     openDialogDeleteReview() {
       this.isOpenDeleteReview = true;
     },
@@ -261,23 +237,38 @@ export default defineComponent({
           })
 
       },
-    createProgress(e: Event) {
-      this.create = false;
+    updateProgress(e: Event) {
+      this.update = false;
       e.preventDefault()
       
       const body = {
-        status: this.status,
         episodeOrChapter: this.episodeOrChapter,
         seasonOrVolume: this.seasonOrVolume,
+        status: this.status,
       }
-      axios.post(`${this.baseProgressUrl}/create/${this.seriesId}`, body,
+      axios.put(`${this.baseProgressUrl}/update/${this.seriesId}`, body,
       { headers: {
         Authorization: `Bearer ${this.token}`,
       }
     })
       .then((res) => {
-          this.showSuccessToast("Succesfully added to progress")
-          this.progressNotExist=false
+          this.showSuccessToast("Succesfully updated progress")
+          this.progress = res.data;
+      })
+      .catch((error) => {
+          console.log("error", error)
+          this.showErrorToast(error.message);
+      })},
+  deleteUserProgress() {
+      this.deleteProgress = false;
+      axios.delete(`${this.baseProgressUrl}/delete/${this.seriesId}`,
+      { headers: {
+        Authorization: `Bearer ${this.token}`,
+      }
+    })
+      .then((res) => {
+          this.showSuccessToast("Succesfully deleted progress")
+          this.$router.push('/progress');
       })
       .catch((error) => {
           console.log("error", error)
@@ -305,8 +296,7 @@ export default defineComponent({
     const baseVoteUrl = "http://34.143.188.191/api/vote";
     const baseProgressUrl = "http://34.143.188.191/api/progress";
     const seriesId = splittedURL[splittedURL.length - 1];
-    const baseAuthUrl = "http://34.124.246.185/api/auth";
-    const baseCatalogUrl = "http://34.87.103.104/api/catalog";
+    const baseCatalogUrl = "http://localhost:8082/api/catalog";
 
     const showErrorToast = (message: string) => {
       toast.error(message);
@@ -322,7 +312,6 @@ export default defineComponent({
       baseReviewUrl,
       baseVoteUrl,
       seriesId,
-      baseAuthUrl,
       baseCatalogUrl,
       baseProgressUrl
     };
@@ -333,9 +322,8 @@ export default defineComponent({
     return {
       data: {} as Series,
       isOpen: false,
-      currentUser: {
-      } as User,
-      create: false,
+      update: false,
+      deleteProgress: false,
       json : {
 
       },
@@ -348,7 +336,8 @@ export default defineComponent({
       isOpenPostReview: false,
       isEditReview: false,
       token: "",
-      myUsername: ""
+      myUsername: "",
+      progress: {} as Progress
     }
   },
 
@@ -361,22 +350,8 @@ export default defineComponent({
     console.log(this.token);
 
     axios
-        .get(`${this.baseAuthUrl}/verify`, {
-      headers: {
-        Authorization: `Bearer ${this.token}`
-      }
-    })
-        .then(response => (this.currentUser = response.data.user))
-        .catch((error) => {
-          console.log(error);
-        });
-
-    axios
-        .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
+        .get(`${this.baseCatalogUrl}/${this.seriesId}`)
         .then(response => (this.data = response.data))
-        .catch((error) => {
-          console.log(error);
-        });
 
 
 
@@ -435,7 +410,7 @@ export default defineComponent({
           console.log(error);
         });
 
-    // Check progress
+    // Get progress
     axios.get(`${this.baseProgressUrl}/${this.seriesId}`, {
       headers: {
         Authorization: `Bearer ${this.token}`
@@ -443,9 +418,9 @@ export default defineComponent({
     })
         .then((response) => {
           console.log(response.data);
+          this.progress = response.data;
         })
         .catch((error) => {
-          this.progressNotExist=true;
           console.log(error);
         });
   }
@@ -461,22 +436,14 @@ export default defineComponent({
         <img v-bind:src="data.imageUrl" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title text-white lg:text-4xl text-2xl font-bold lg:text-left">{{ data['title'] }} ({{ data['year'] }})</div>
-        <div class="series-admin flex space-x-4" v-if="currentUser['role'] === 'ADMIN'">
-          <router-link :to="'/catalog/update/'+ data['type'] +'/' + data['id']">
-            <PencilIcon class="w-8 h-8  text-indigo"></PencilIcon>
-          </router-link>
-          <button @click="openDialog">
-            <TrashIcon class="w-8 h-8  text-indigo"></TrashIcon>
-          </button>
-        </div>
+        <div class="series-title">{{ data.title }} ({{ data.year }})</div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
             <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
-            <label>Creator: </label>
+            <label>Creator</label>
             <span>{{ data.author }} {{ data.producer }} {{ data.director }}</span>
           </div>
           <div class="set">
@@ -498,14 +465,38 @@ export default defineComponent({
         </div>
         <div class="series-description">Description:</div>
         <div class="series-description-text">{{ data['description'] }} </div>
-        
-        <button @click="create=true" class="text-indigo lg:text-2xl md:text-xl text-xl font-bold" v-if="progressNotExist">Add to Progress</button>
-              <!-- Dialog to add progress  -->
-            <div class="fixed inset-0 flex items-center justify-center z-10" v-if="create">
+        <div class="set" v-if="data.type === `SHOW`">
+          <label>Progress: </label>
+          <br>
+          <span>{{ progress.seasonOrVolume }} / {{ data.seasons }} season(s)</span>
+          <br>
+          <span>{{ progress.episodeOrChapter }} / {{ data.episodes }} episode(s)</span>
+        </div>
+
+        <div class="set" v-if="data.type === `BOOK`">
+          <label>Progress: </label>
+          <br>
+          <span>{{ progress.seasonOrVolume }} / {{ data.volumes }} volume(s)</span>
+          <br>
+          <span>{{ progress.episodeOrChapter }} / {{ data.chapters }} chapter(s)</span>
+        </div>
+
+        <div class="set">
+          <label>Status: </label>
+          <span>{{ progress.status }} </span>
+        </div>
+
+        <div class="flex justify-center gap-8">
+          <button @click="update=true" class="text-indigo lg:text-2xl md:text-xl text-xl font-bold">Update Progress</button>
+          <button @click="deleteProgress=true" class="text-indigo lg:text-2xl md:text-xl text-xl font-bold">Delete Progress</button>
+        </div>
+
+            <!-- Dialog to add progress  -->
+            <div class="fixed inset-0 flex items-center justify-center z-10" v-if="update">
               <div class="bg-grey border-2 rounded-lg p-4">
                 <!-- Dialog content goes here -->
-                <form :onSubmit="createProgress">
-                  <h5 class = "capitalize text-3xl font-bold text-white w-full"> Create Progress </h5>
+                <form :onSubmit="updateProgress">
+                  <h5 class = "capitalize text-3xl font-bold text-white w-full"> Update Progress </h5>
                   
                   <div v-if="data['type'] != `FILM`">Season or Volume: 
                     <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="seasonOrVolume" required>
@@ -515,7 +506,7 @@ export default defineComponent({
                       <option v-for="volume in data['volumes']" :value="volume">{{volume}}</option>
                     </select>
                   </div>
-                  <div v-if="data['type'] != `FILM`">Episode or Chapter: 
+                  <div v-if="data['type'] != `FILM`"> Episode or Chapter: 
                     <select class="bg-grey rounded-lg" v-if="data['type'] === `SHOW`" v-model="episodeOrChapter" required>
                       <option v-for="episode in data['episodes']" :value="episode">{{episode}}</option>
                     </select>
@@ -532,10 +523,22 @@ export default defineComponent({
                     </select>
                   </div>
                   <div class="flex justify-end mt-4">
-                    <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="create=false">Cancel</button>
-                    <button type="submit" class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2">Add</button>
+                    <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="update=false">Cancel</button>
+                    <button type="submit" class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2">Update</button>
                   </div>
                 </form>
+              </div>
+            </div>
+
+            <!-- Dialog  -->
+              <div class="fixed inset-0 flex items-center justify-center z-50" v-if="deleteProgress">
+              <div class="bg-grey border-2 rounded-lg p-4">
+                <!-- Dialog content goes here -->
+                <h2>Are you sure you want to delete your progress?</h2>
+                <div class="flex justify-end mt-4">
+                  <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="deleteProgress=false">No</button>
+                  <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="deleteUserProgress">Yes</button>
+                </div>
               </div>
             </div>
       </div>
@@ -562,18 +565,6 @@ export default defineComponent({
               Delete
             </button>
           </div>
-          
-            <!-- Dialog  -->
-            <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpen">
-              <div class="bg-grey rounded-lg p-4">
-                <!-- Dialog content goes here -->
-                <h2>Are you sure you want to delete this series from the database?</h2>
-                <div class="flex justify-end mt-4">
-                  <button class="bg-red-400 hover:bg-red-800 rounded px-4 py-2 mr-2" @click="closeDialog(false)">No</button>
-                  <button class="bg-purple-700 hover:bg-purple-900 text-white rounded px-4 py-2" @click="closeDialog(true)">Yes</button>
-                </div>
-              </div>
-            </div>
 
           <!-- Dialog Delete Review -->
           <div class="fixed inset-0 flex items-center justify-center z-50" v-if="isOpenDeleteReview">
