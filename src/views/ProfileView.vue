@@ -46,7 +46,7 @@ export default defineComponent({
        
         if(this.changeEmail !== this.email || this.changeUsername !== this.username) {
           Cookies.remove('token')
-          this.$router.push('/auth/sign-in');
+          window.location.replace(window.location.origin + "/auth/sign-in")
         } else {
           this.email = this.changeEmail
           this.name = this.changeName
@@ -157,16 +157,15 @@ export default defineComponent({
             <div class="flex items-center justify-center min-h-screen">
                 <div class="w-1/2 px-6 py-4 bg-grey rounded- flex flex-col gap-y-8 text-white font-bold">
                 <h2 class="text-xl mb-4">Edit Profile</h2>
-                <p className = "text-red-500"> Warning: Changing your username/email will automatically log you out</p>
+                <p className = "text-red-500" v-show="role==='USER'"> Warning: Changing your username/email will automatically log you out</p>
                 <form class = "flex flex-col max-w-5xl w-full mx-0 gap-y-8 items-center" action = "/" :onSubmit="edit">
-
                     <InputField type="text" placeholder="Name" v-on:update:inp="changeName=$event" v-bind:inp="changeName"> 
                         <IdentificationIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
                     </InputField>
-                    <InputField type="text" placeholder="Username" v-on:update:inp="changeUsername = $event" v-bind:inp="changeUsername"> 
-                        <UserIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+                    <InputField type="text" placeholder="Username" v-on:update:inp="changeUsername = $event" v-bind:inp="changeUsername" v-show="role==='USER'"> 
+                        <UserIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none"/>
                     </InputField>
-                    <InputField type="email" placeholder="Email" v-on:update:inp="changeEmail = $event" v-bind:inp="changeEmail"> 
+                    <InputField type="email" placeholder="Email" v-on:update:inp="changeEmail = $event" v-bind:inp="changeEmail" v-show="role==='USER'"> 
                         <EnvelopeIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
                     </InputField>
                     <v-button type="indigo" className = "text-center flex justify-center w-fit"> Edit </v-button>

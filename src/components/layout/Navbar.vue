@@ -111,9 +111,16 @@ export default defineComponent({
 
     return {
       menu,
+      token,
       showLogin,
       menus
     };
+  },
+  methods: {
+    handleLogout() {
+      Cookies.remove("token")
+      window.location.replace(window.location.origin + "/")
+    }
   }
 });
 
@@ -128,6 +135,7 @@ export default defineComponent({
                     {{name}}
                 </router-link>
             </li>
+            <p className = "cursor-pointer text-red-500 font-bold text-sm" v-show="!!token" @click="handleLogout"> Logout </p>
         </ul>
         <Bars3Icon class="h-6 w-6 text-white lg:hidden flex cursor-pointer m-0" @click="menu.toggleHamburger()"/>
     </nav>
