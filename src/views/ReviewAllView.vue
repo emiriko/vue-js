@@ -18,17 +18,31 @@ interface Review {
 }
 
 
+interface User {
+  name: string;
+  email: string;
+  role: string;
+  username: string
+}
+
+
 export default defineComponent ({
   name: "ReviewAllView",
   components: {
     ReviewCard
   }, methods: {
     handleVoteChange(type: string, reviewId: number) {
+      if (this.token == "") {
+        this.showErrorToast("Please sign in first");
+        return;
+      }
       // Update the state based on the type and review ID received
       const review: Review | undefined = this.reviews.find(item => item.id === reviewId);
       const foundReview: Review = review ?? {} as Review;
       let isVoted = true;
       let message = "";
+      let upvoteTemp = foundReview.upvote;
+      let downvoteTemp = foundReview.downvote;
 
       if (type === "upvote") {
         message = "Berhasil upvote review";
@@ -81,6 +95,8 @@ export default defineComponent ({
           .catch((error) => {
             console.log("error", error.response.data.message)
             this.showErrorToast(error.response.data.message);
+            foundReview.upvote = upvoteTemp;
+            foundReview.downvote = downvoteTemp;
           })
 
     }
@@ -89,6 +105,7 @@ export default defineComponent ({
     const baseReviewUrl = "http://34.143.188.191/api/review";
     const splittedURL = window.location.pathname.split('/');
     const seriesId = splittedURL[splittedURL.length - 1];
+    const baseAuthUrl = "http://34.124.246.185/api/auth";
     const toast = useToast();
 
     const showSuccessToast = (message: string) => {
@@ -103,7 +120,8 @@ export default defineComponent ({
       baseReviewUrl,
       seriesId,
       showSuccessToast,
-      showErrorToast
+      showErrorToast,
+      baseAuthUrl
     }
   },
 
@@ -112,6 +130,7 @@ export default defineComponent ({
       reviews: [] as Review[],
       isDataLoaded: false,
       myReview: {} as Review,
+      currentUser: {} as User,
       token: ""
     };
   },
@@ -122,6 +141,17 @@ export default defineComponent ({
     }, 2000);
 
     this.token = Cookies.get('token') || "";
+
+    axios
+        .get(`${this.baseAuthUrl}/verify`, {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        })
+        .then(response => (this.currentUser = response.data.user))
+        .catch((error) => {
+          console.log(error);
+        });
 
     // 1. Get Review by Series ID
     axios.get(`${this.baseReviewUrl}/series_id/${this.seriesId}`, {
@@ -166,7 +196,7 @@ export default defineComponent ({
                     :id="review.id"
                     :is-upvote="review.isUpvote"
                     :is-voted="review.isVoted"
-                    :my-username="myReview.username"
+                    :my-username="currentUser.username"
                     :upvote="review.upvote"
                     class="mb-6"
                     @state-change="handleVoteChange"
