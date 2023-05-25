@@ -45,10 +45,8 @@ export default defineComponent({
     };
 
     const splittedURL = window.location.pathname.split('/');
-    const baseReviewUrl = "http://localhost:8081/api/review";
-    const baseVoteUrl = "http://localhost:8081/api/vote";
-    const baseProgressUrl = "http://localhost:8081/api/progress";
     const seriesId = splittedURL[splittedURL.length - 1];
+    const baseProgressUrl = "http://34.143.188.191/api/progress";
     const baseCatalogUrl = "http://localhost:8082/api/catalog";
 
     const showErrorToast = (message: string) => {
@@ -57,8 +55,6 @@ export default defineComponent({
       return {
       showSuccessToast,
       showErrorToast,
-      baseReviewUrl,
-      baseVoteUrl,
       seriesId,
       baseCatalogUrl,
       baseProgressUrl
@@ -128,9 +124,6 @@ export default defineComponent({
 
   <div v-for="item in data">
     <div class="container mb-5 gap-5" @click="toDetail(item.seriesId)">
-      <!-- <router-link :to="`progress/` + item.seriesId" class="series-link"> -->
-      <!-- <a href="${baseProgressUrl}" > -->
-    
       <div class="poster">
         <img v-bind:src="item.imageUrl" alt="image"/>
       </div>
@@ -180,8 +173,6 @@ export default defineComponent({
         </div>
         
       </div>
-      <!-- </a> -->
-      <!-- </router-link> -->
     </div>
   </div>
 

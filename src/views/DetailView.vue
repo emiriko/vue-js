@@ -287,9 +287,9 @@ export default defineComponent({
     };
 
     const splittedURL = window.location.pathname.split('/');
-    const baseReviewUrl = "http://localhost:8081/api/review";
-    const baseVoteUrl = "http://localhost:8081/api/vote";
-    const baseProgressUrl = "http://localhost:8081/api/progress";
+    const baseReviewUrl = "http://34.143.188.191/api/review";
+    const baseVoteUrl = "http://34.143.188.191/api/vote";
+    const baseProgressUrl = "http://34.143.188.191/api/progress";
     const seriesId = splittedURL[splittedURL.length - 1];
     const baseCatalogUrl = "http://localhost:8082/api/catalog";
 
