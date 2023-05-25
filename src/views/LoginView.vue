@@ -26,13 +26,11 @@ export default defineComponent({
       }
       axios.post("http://34.124.246.185/api/auth/sign-in", payload)
       .then((res) => {
-        console.log(res)
         Cookies.set('token', res.data.token, { expires: 7 });
         this.showSuccessToast(res.data.message)
-        this.$router.push('/');
+        window.location.replace(window.location.origin + "/")
       })
       .catch((error) => {
-        console.log(error)
         this.showErrorToast(error.response.data.message);
       })
     }
