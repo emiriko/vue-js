@@ -1,5 +1,6 @@
 <script lang="ts">
 import {defineComponent} from "vue";
+
 export default defineComponent({
   name: 'ReviewCard',
   props: {
@@ -43,7 +44,9 @@ export default defineComponent({
       } return value
     },
     handleVoteClick(type: String) {
-      this.$emit('state-change', type, this.id);
+      if (this.username != this.myUsername) {
+        this.$emit('state-change', type, this.id);
+      }
     }
   }
 })
@@ -59,7 +62,7 @@ export default defineComponent({
               h-[180px] w-11/12 lg:w-[593px] rounded-xl grid grid-cols-1 gap-2 content-center py-5 px-20 mx-0">
       <h1 class = "text-2xl font-bold text-white w-full text-justify"> {{ username }}</h1>
       <div class="whitespace-break-words text-left">{{ limitText(review) }}</div>
-      <div v-if="username != myUsername" class="items-end flex justify-end gap-4">
+      <div class="items-end flex justify-end gap-4">
         <div class="flex gap-2">
           <div @click="handleVoteClick('upvote')">
             <img v-if="isUpvote" class="w-[20px]" src='@/assets/icons/upvote-notclicked.svg'/>

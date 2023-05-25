@@ -47,7 +47,7 @@ export default defineComponent({
     const splittedURL = window.location.pathname.split('/');
     const seriesId = splittedURL[splittedURL.length - 1];
     const baseProgressUrl = "http://34.143.188.191/api/progress";
-    const baseCatalogUrl = "http://localhost:8082/api/catalog";
+    const baseCatalogUrl = "http://34.87.103.104/api/catalog";
 
     const showErrorToast = (message: string) => {
       toast.error(message);
@@ -67,7 +67,8 @@ export default defineComponent({
       data: [] as ProgressSeries[],
       isDataLoaded: false,
       token: "",
-      myUsername: ""
+      myUsername: "",
+      progressNotExist: true
     }
   },
 
@@ -88,14 +89,12 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data);
           this.data = response.data;
+          if (response.data.length != 0)
+            this.progressNotExist=false
         })
         .catch((error) => {
           console.log(error);
         });
-
-    // PSUING
-    // for (progress in this.progress):
-    //     console.log(this.progress.)
 
     this.data.forEach( a => {
       axios
@@ -113,16 +112,15 @@ export default defineComponent({
           a.chapters = response.data.chapters
         })
     })
-    // for f in this.progress:
-    //   this.showSuccessToast(f)
   }
 })
 
 </script>
 
 <template>
-
-  <div v-for="item in data">
+    
+  <h2 v-if="progressNotExist" class="text-3xl mb-4 text-indigo font-bold">Go to Our Catalog and Create Your Progress!</h2>
+  <div v-else v-for="item in data">
     <div class="container mb-5 gap-5" @click="toDetail(item.seriesId)">
       <div class="poster">
         <img v-bind:src="item.imageUrl" alt="image"/>
