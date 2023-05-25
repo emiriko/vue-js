@@ -1,30 +1,21 @@
 <script lang="ts">
 import {defineComponent, ref} from "vue";
-import ReviewCard from "@/components/common/ReviewCard.vue";
-import VoteButton from "@/components/common/VoteButton.vue";
 import axios from "axios";
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 import Cookies from 'js-cookie';
 
-interface Series {
+interface ProgressSeries {
   title: string;
   id: number;
-  description: string;
   year: number;
   genres: string[];
   imageUrl: string;
   type: string;
-  author: string;
-  producer: string;
-  director: string;
   volumes: number;
   chapters: number;
   seasons: number;
   episodes: number;
-}
-
-interface Progress {
   seriesId: number;
   episodeOrChapter: number;
   seasonOrVolume: number;
@@ -40,6 +31,9 @@ export default defineComponent({
       const rest = allLowerCase.slice(1);
 
       return capitalizedFirst+rest;
+    },
+    toDetail(seriesId: number) {
+      this.$router.push('/progress/' + seriesId);
     }
   },
   
@@ -74,15 +68,14 @@ export default defineComponent({
 
   data() {
     return {
-      data: {} as Series,
-      progress: [] as Progress[],
+      data: [] as ProgressSeries[],
       isDataLoaded: false,
       token: "",
       myUsername: ""
     }
   },
 
-  mounted() {
+  async mounted() {
     setTimeout(() => {
       this.isDataLoaded = true;
     }, 2000);
@@ -90,15 +83,15 @@ export default defineComponent({
     this.token = Cookies.get('token') || "";
     console.log(this.token);
 
-    // Check progress
-    axios.get(`${this.baseProgressUrl}`, {
+    // get progress
+    await axios.get(`${this.baseProgressUrl}`, {
       headers: {
         Authorization: `Bearer ${this.token}`
       }
     })
         .then((response) => {
           console.log(response.data);
-          this.progress = response.data;
+          this.data = response.data;
         })
         .catch((error) => {
           console.log(error);
@@ -108,10 +101,22 @@ export default defineComponent({
     // for (progress in this.progress):
     //     console.log(this.progress.)
 
-    axios
-      .get(`${this.baseCatalogUrl}/${this.$route.params.id}`)
-      .then(response => (this.data = response.data))
-
+    this.data.forEach( a => {
+      axios
+      .get(`${this.baseCatalogUrl}/${a.seriesId}`)
+      .then((response) => {
+          console.log(response.data);
+          a.title = response.data.title
+          a.year = response.data.year
+          a.imageUrl = response.data.imageUrl
+          a.genres = response.data.genres
+          a.type = response.data.type
+          a.seasons = response.data.seasons
+          a.volumes = response.data.volumes
+          a.episodes = response.data.episodes
+          a.chapters = response.data.chapters
+        })
+    })
     // for f in this.progress:
     //   this.showSuccessToast(f)
   }
@@ -121,37 +126,62 @@ export default defineComponent({
 
 <template>
 
-  <div>
-    <div class="container mb-5">
+  <div v-for="item in data">
+    <div class="container mb-5 gap-5" @click="toDetail(item.seriesId)">
+      <!-- <router-link :to="`progress/` + item.seriesId" class="series-link"> -->
+      <!-- <a href="${baseProgressUrl}" > -->
+    
       <div class="poster">
-        <img v-bind:src="data.imageUrl" alt="image"/>
+        <img v-bind:src="item.imageUrl" alt="image"/>
       </div>
       <div class="info">
-        <div class="series-title">{{ data.title }} ({{ data.year }})</div>
+        <div class="series-title">{{ item.title }} ({{ item.year }})</div>
         <div class="series-detail">
           <div class="set">
             <label>Genre: </label>
-            <span v-for="genre in data.genres">{{ capitalized(genre)+ " " }} </span>
+            <span v-for="genre in item.genres">{{ capitalized(genre)+ " " }} </span>
           </div>
           <div class="set">
             <label>Series ID: </label>
-            <span>{{ data.id }}</span>
+            <span>{{ item.seriesId }}</span>
           </div>
           <div class="set">
             <label>Type: </label>
-            <span>{{ data.type }}</span>
+            <span>{{ item.type }}</span>
           </div>
           <div class="set">
-            <label v-if="data.type === `SHOW`">Season(s): {{ data.seasons }}</label>
-            <label v-if="data.type === `BOOK`">Volume(s): {{ data.volumes }}</label>
+            <label v-if="item.type === `SHOW`">Season(s): {{ item.seasons }}</label>
+            <label v-if="item.type === `BOOK`">Volume(s): {{ item.volumes }}</label>
           </div>
           <div class="set">
-            <label v-if="data.type === `SHOW`">Episode(s): {{ data.episodes }}</label>
-            <label v-if="data.type === `BOOK`">Chapter(s): {{ data.chapters }}</label>
+            <label v-if="item.type === `SHOW`">Episode(s): {{ item.episodes }}</label>
+            <label v-if="item.type === `BOOK`">Chapter(s): {{ item.chapters }}</label>
           </div>
+          <div class="set" v-if="item.type === `SHOW`">
+          <label>Progress: </label>
+          <br>
+          <span>{{ item.seasonOrVolume }} / {{ item.seasons }} season(s)</span>
+          <br>
+          <span>{{ item.episodeOrChapter }} / {{ item.episodes }} episode(s)</span>
+        </div>
+
+        <div class="set" v-if="item.type === `BOOK`">
+          <label>Progress: </label>
+          <br>
+          <span>{{ item.seasonOrVolume }} / {{ item.volumes }} volume(s)</span>
+          <br>
+          <span>{{ item.episodeOrChapter }} / {{ item.chapters }} chapter(s)</span>
+        </div>
+
+        <div class="set">
+          <label>Status: </label>
+          <span>{{ item.status }} </span>
+        </div>
         </div>
         
       </div>
+      <!-- </a> -->
+      <!-- </router-link> -->
     </div>
   </div>
 
@@ -164,6 +194,7 @@ export default defineComponent({
   flex-direction: row;
   margin-top: -30px;
   column-gap: 10px;
+  margin-bottom: 5%;
 }
 
 .container .poster {
