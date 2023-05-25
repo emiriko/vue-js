@@ -27,7 +27,7 @@ export default defineComponent({
         password: this.password,
         email: this.email,
         username: this.username,
-        role: "ADMIN"
+        role: this.role
       }
 
       axios.post("http://34.124.246.185/api/auth/sign-up", payload)
@@ -38,6 +38,10 @@ export default defineComponent({
         console.log(error)
         this.showErrorToast(error.response.data.message);
       })
+    },
+    handleChange(event: Event){
+      const target = event.target as HTMLSelectElement;
+      this.role = target.value
     }
   },
   setup() {
@@ -45,6 +49,8 @@ export default defineComponent({
     const username = ref('');
     const email = ref('');
     const password = ref('');
+    const role = ref("USER");
+
     const toast = useToast();
     
     const showSuccessToast = (message: string) => {
@@ -59,9 +65,15 @@ export default defineComponent({
       name,
       username,
       email,
+      role,
       password,
       showSuccessToast,
       showErrorToast
+    };
+  },
+  data() {
+    return {
+      select: 'USER' // Set the default value here
     };
   }
 })
@@ -84,6 +96,10 @@ export default defineComponent({
             <InputField type="password" placeholder="Password" v-on:update:inp="password = $event" v-bind:inp="password"> 
               <LockClosedIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
+            <select class = "w-full bg-[#3F4152] px-6 py-4 rounded-lg placeholder:text-white" v-model="select" @change="handleChange">
+              <option value = "ADMIN"> Admin </option>
+              <option value = "USER"> User </option>
+            </select>
             <v-button type="indigo" className = "text-center flex justify-center w-fit"> Sign up </v-button>
         </form>
     </div>

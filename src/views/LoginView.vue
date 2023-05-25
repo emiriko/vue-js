@@ -28,7 +28,7 @@ export default defineComponent({
       .then((res) => {
         Cookies.set('token', res.data.token, { expires: 7 });
         this.showSuccessToast(res.data.message)
-        this.$router.push('/');
+        window.location.replace(window.location.origin + "/")
       })
       .catch((error) => {
         this.showErrorToast(error.response.data.message);
