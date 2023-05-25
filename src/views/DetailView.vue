@@ -660,13 +660,13 @@ export default defineComponent({
         <div v-for="review in reviews.slice(0, 3)" :key="review.id">
           <ReviewCard :review=review.reviewContent
                       :username=review.username
-                      :my-username=this.currentUser.username
+                      :my-username=currentUser.username
                       :is-upvote=review.isUpvote
                       :is-voted="review.isVoted"
                       :upvote="review.upvote"
                       :downvote="review.downvote"
                       :id="review.id"
-                      v-if="review.username != this.currentUser.username"
+                      v-if="review.username != currentUser.username"
                       @state-change="handleVoteChange"
                       class="mb-6"
                       >
@@ -678,10 +678,10 @@ export default defineComponent({
           <a class="text-indigo lg:text-3xl md:text-xl text-xl font-bold">See all</a>
         </router-link>
       </div>
-      <div v-if="this.token === ''">
+      <div v-if="token === ''">
         <p>Please sign in to see reviews</p>
       </div>
-      <div v-if="reviews.length === 0 && this.token !== ''">
+      <div v-if="reviews.length === 0 && token !== ''">
         <p>There's no other reviews yet</p>
       </div>
     </div>
