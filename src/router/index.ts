@@ -18,7 +18,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: RegisterViewVue
+      component: HomeViewVue
     },
     {
       path: "/catalog",
