@@ -22,6 +22,22 @@ export default defineComponent({
       method: "POST"
     };
   },
+  methods: {
+    selected(buttonId:   string) {
+
+        const buttons = document.getElementsByClassName("formButton");
+        for(var button of buttons){
+          if (button.id === buttonId){
+            button.classList.add("text-purple-900")
+          } else {
+            button.classList.remove("text-purple-900")
+          }
+           
+         }
+        this.component = buttonId;
+      
+    }
+  }
   
   
 })
@@ -32,9 +48,9 @@ export default defineComponent({
 
 
 <template>
-    <button class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700" @click="component ='FilmForm'">Film</button>
-    <button class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700" @click="component ='ShowForm'">Show</button>
-    <button class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700" @click="component ='BookForm'">Book</button>
+    <button id="FilmForm" class="text-purple-900 px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700 formButton" @click="selected('FilmForm')">Film</button>
+    <button id="ShowForm" class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700 formButton" @click="selected('ShowForm')">Show</button>
+    <button id="BookForm" class="px-8 py-2 text-center rounded-xl font-bold hover:text-purple-700 formButton" @click="selected('BookForm')">Book</button>
     <component :is="component" :method="method">
         <h1 class = "capitalize text-5xl font-bold text-white w-full"> Create Series </h1>
 

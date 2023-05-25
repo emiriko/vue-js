@@ -4,20 +4,24 @@
 
 import { defineComponent, ref, onMounted } from 'vue';
 import Button from '@/components/common/Button.vue';
-import { EnvelopeIcon, IdentificationIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/solid';
+import { PhotoIcon, FilmIcon, UserCircleIcon, DocumentTextIcon } from '@heroicons/vue/24/solid';
 import InputField from '@/components/common/InputField.vue';
 import axios from 'axios';
 import {Multiselect} from 'vue-multiselect';
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
+const baseCatalogUrl = "http://34.87.103.104/api/catalog";
+
+
+
 export default defineComponent({
   name: 'Film Form',
   components: {
-    LockClosedIcon,
-    UserIcon,
-    EnvelopeIcon,
-    IdentificationIcon,
+    UserCircleIcon,
+    DocumentTextIcon,
+    PhotoIcon,
+    FilmIcon,
     "v-button": Button,
     InputField,
     Multiselect,
@@ -40,10 +44,12 @@ export default defineComponent({
        "DRAMA",
        "HISTORICAL",
       ],
-      json : {
-
-      }
+      token: ""
     };
+  },
+  mounted() {
+        this.token = this.getCookieValue("token");
+    
   },
   props: {
     method: {
@@ -73,10 +79,11 @@ export default defineComponent({
         year: this.year
       }
       if (this.method === "POST") {
-        await axios.post("http://localhost:8080/api/catalog/create_film", payload,
+        await axios.post(`${baseCatalogUrl}/create_film`, payload,
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.token}`,
           }
         })
         .then((res) => {
@@ -88,10 +95,11 @@ export default defineComponent({
             this.showErrorToast(error.message);
         })
       } else {
-        await axios.put("http://localhost:8080/api/catalog/update_film/"+this.id, payload, 
+        await axios.put(`${baseCatalogUrl}/update_film/${this.id}`, payload, 
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.token}`
           }
         })
         .then((res) => {
@@ -106,7 +114,20 @@ export default defineComponent({
         
       }
       
-    }
+    },
+    getCookieValue(cookieName: String) {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Check if the cookie starts with the specified name
+        if (cookie.startsWith(cookieName + '=')) {
+          // Return the value of the cookie
+          return cookie.substring(cookieName.length + 1);
+        }
+      }
+      // Cookie not found
+      return "";
+    },
   },
   setup(props) {
     const title = ref('');
@@ -118,7 +139,7 @@ export default defineComponent({
     if (props.method === "PUT") {
       const fetchData = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/catalog/'+props.id);
+            const response = await axios.get(`${baseCatalogUrl}/${props.id}`);
             // Assign the response data to the variables
             title.value = response.data.title;
             description.value = response.data.description;
@@ -175,21 +196,23 @@ export default defineComponent({
     <div class = "flex py-14 mx-0 justify-center">
         <form class = "flex flex-col max-w-5xl w-full mx-0 gap-y-8 items-center" action = "/" :onSubmit="create">
             <InputField type="text" placeholder="Title" v-on:update:inp="title = $event" v-bind:inp="title"> 
-              <IdentificationIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+              <FilmIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
             <div class="flex items-center gap-x-4 w-full mx-0 relative">
                 <label class="typo__label">Year</label>
                 <input type="number" placeholder="Year" v-model="year" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> 
             </div>
             <InputField type="text" placeholder="Director" v-on:update:inp="director = $event" v-bind:inp="director"> 
-              <LockClosedIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+              <UserCircleIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
             <InputField type="url" placeholder="Url for Cover Image" v-on:update:inp="imageUrl = $event" v-bind:inp="imageUrl"> 
-              <EnvelopeIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
+              <PhotoIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none" />
             </InputField>
 
             <div class="flex items-center gap-x-4 w-full mx-0 relative">
-                <textarea type="text" placeholder="Description" v-model="description" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> </textarea>
+              <textarea type="text" placeholder="Description" v-model="description" class = "px-6 py-4 bg-[#3F4152] rounded-lg placeholder:text-[#9C9C9C] text-light-grey w-full" required> </textarea>
+              <DocumentTextIcon class="w-5 h-5 absolute right-0 mr-6 pointer-events-none"/>
+
             </div>
 
             

@@ -7,7 +7,9 @@ import ProfileViewVue from '@/views/ProfileView.vue'
 import CatalogViewVue from '@/views/CatalogView.vue'
 import CreateSeriesViewVue from '@/views/CreateSeriesView.vue'
 import UpdateSeriesView from '@/views/UpdateSeriesView.vue'
-import DetailView from "@/views/DetailView.vue";
+import DetailView from "@/views/DetailView.vue"
+import ProgressViewVue from '@/views/ProgressView.vue'
+import ProgressDetailViewVue from '@/views/ProgressDetailView.vue'
 import ReviewAllView from "@/views/ReviewAllView.vue";
 
 const router = createRouter({
@@ -33,12 +35,14 @@ const router = createRouter({
     {
       path: '/catalog/create',
       name: 'create',
-      component: CreateSeriesViewVue
+      component: CreateSeriesViewVue,
+      meta: { requiresRoleCheck: true }
     },
     {
       path: '/catalog/update/:type/:id',
       name: 'update',
-      component: UpdateSeriesView
+      component: UpdateSeriesView,
+      meta: { requiresRoleCheck: true }
     },
     {
       path: "/catalog/:id",
@@ -53,7 +57,12 @@ const router = createRouter({
     {
       path: "/progress",
       name: "my progress",
-      component: HomeViewVue,
+      component: ProgressViewVue,
+    },
+    {
+      path: "/progress/:seriesId",
+      name: "progress detail",
+      component: ProgressDetailViewVue,
     },
     {
       path: "/profile",
